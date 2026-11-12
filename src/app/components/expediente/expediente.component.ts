@@ -37,6 +37,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   public billetera: Billetera | null = null
   public cargandoBilletera = true
   public correoConfigurado = true
+  public correoFaltan: string[] = []
   public formCobro = { concepto: '', monto: '', moneda: 'USD', codigo_sala: '' }
   public creandoCobro = false
   public cobroPagando: Cobro | null = null   // cobro cuyo formulario de pago está abierto
@@ -103,6 +104,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
       next: (resp) => {
         this.billetera = resp.data
         this.correoConfigurado = resp.correoConfigurado !== false
+        this.correoFaltan = resp.correoFaltan ?? []
         this.cargandoBilletera = false
       },
       error: (err) => {

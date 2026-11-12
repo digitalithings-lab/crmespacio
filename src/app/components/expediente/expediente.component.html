@@ -215,7 +215,7 @@
     <ng-container *ngIf="billetera">
       <p *ngIf="!correoConfigurado" class="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
         <i class="ph ph-warning text-lg"></i>
-        <span>El envío de correos aún no está configurado en el servidor. Los pagos se registran, pero no se enviarán facturas ni recordatorios.</span>
+        <span>El envío de correos aún no está configurado en el servidor. Los pagos se registran, pero no se enviarán facturas ni recordatorios.<span *ngIf="correoFaltan.length"> El servidor no ve: <strong>{{ correoFaltan.join(', ') }}</strong>.</span></span>
       </p>
 
       <!-- Totales -->
