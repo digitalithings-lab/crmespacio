@@ -71,6 +71,24 @@ export interface Billetera {
   resumen: { pagado: number; pendiente: number; moneda: string | null }
 }
 
+export interface CitaAgenda {
+  id: string
+  startsAt: string
+  endsAt: string
+  status: 'REQUESTED' | 'PENDING_PAYMENT' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW'
+  modality: string
+  meetingUrl: string | null
+  note: string | null
+  clientType: string
+  priceCents: number
+  currency: string
+  paid: boolean
+  patient: { fullName: string | null; idNumber: string | null; age: number | null; email: string | null; phone: string | null }
+  partner: { fullName: string | null; idNumber: string | null; email: string | null; phone: string | null } | null
+  clientes: Cliente[]
+  cobro: Cobro | null
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -105,6 +123,11 @@ export class ServiceclientesService {
   }
   obtenerCliente(idexpediente: string): Observable<any> {
     return this.http.get<any>(`${api}/cliente/${idexpediente}`)
+  }
+
+  // ---- Agenda (citas de Florece) ----
+  obtenerAgenda(desde: Date, hasta: Date): Observable<any> {
+    return this.http.get<any>(`${api}/agenda`, { params: { desde: desde.toISOString(), hasta: hasta.toISOString() } })
   }
 
   // ---- Billetera ----

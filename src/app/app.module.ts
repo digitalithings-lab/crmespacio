@@ -1,4 +1,6 @@
-import { NgModule } from '@angular/core';
+import { LOCALE_ID, NgModule } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 
@@ -16,7 +18,10 @@ import { ToastComponent } from './components/toast/toast.component';
 import { ExpedienteComponent } from './components/expediente/expediente.component';
 import { NotaFlotanteComponent } from './components/nota-flotante/nota-flotante.component';
 import { ReunionesComponent } from './components/reuniones/reuniones.component';
+import { AgendaComponent } from './components/agenda/agenda.component';
 import { SalaComponent } from './components/sala/sala.component';
+
+registerLocaleData(localeEs)
 
 @NgModule({
   declarations: [
@@ -33,6 +38,7 @@ import { SalaComponent } from './components/sala/sala.component';
     NotaFlotanteComponent,
     ReunionesComponent,
     SalaComponent,
+    AgendaComponent,
   ],
   imports: [
     BrowserModule,
@@ -42,7 +48,7 @@ import { SalaComponent } from './components/sala/sala.component';
 
 
   ],
-  providers: [],
+  providers: [{ provide: LOCALE_ID, useValue: 'es' }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

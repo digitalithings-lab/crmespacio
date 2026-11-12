@@ -1,0 +1,179 @@
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <h1 class="text-2xl font-extrabold tracking-tight">Agenda</h1>
+    <p class="mt-1 text-sm text-zinc-500">Las citas de Florece. Toca un día para ver sus citas y una cita para ver al cliente y su billetera.</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <button type="button" (click)="hoy()" class="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95">Hoy</button>
+    <div class="flex items-center rounded-xl border border-zinc-200 bg-white">
+      <button type="button" (click)="mover(-1)" aria-label="Mes anterior" class="flex h-10 w-10 items-center justify-center rounded-l-xl text-zinc-600 transition hover:bg-zinc-50"><i class="ph ph-caret-left text-lg"></i></button>
+      <span class="min-w-[9.5rem] text-center text-sm font-bold capitalize">{{ mes | date: 'LLLL yyyy' }}</span>
+      <button type="button" (click)="mover(1)" aria-label="Mes siguiente" class="flex h-10 w-10 items-center justify-center rounded-r-xl text-zinc-600 transition hover:bg-zinc-50"><i class="ph ph-caret-right text-lg"></i></button>
+    </div>
+  </div>
+</div>
+
+<p *ngIf="error" class="mt-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+  <i class="ph ph-warning text-lg"></i><span>{{ error }}</span>
+</p>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+  <!-- Calendario -->
+  <div class="rounded-2xl border border-zinc-200 bg-white p-3 sm:p-4" [class.opacity-60]="cargando">
+    <div class="grid grid-cols-7 text-center text-xs font-semibold uppercase tracking-wider text-zinc-400">
+      <span *ngFor="let s of semanas" class="py-2">{{ s }}</span>
+    </div>
+    <div class="grid grid-cols-7 gap-1">
+      <button *ngFor="let d of dias" type="button" (click)="elegir(d)"
+        class="relative flex aspect-square flex-col items-center justify-start rounded-xl p-1.5 text-sm transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 sm:p-2"
+        [ngClass]="d.clave === seleccionado ? 'bg-brand-700 text-white shadow-sm' : d.delMes ? 'text-zinc-800 hover:bg-zinc-100' : 'text-zinc-300 hover:bg-zinc-50'"
+        [class.ring-2]="d.hoy && d.clave !== seleccionado" [class.ring-brand-300]="d.hoy && d.clave !== seleccionado"
+        [attr.aria-label]="(d.fecha | date: 'd MMMM') + ', ' + d.citas.length + ' citas'">
+        <span class="font-semibold">{{ d.fecha | date: 'd' }}</span>
+        <span *ngIf="d.citas.length" class="mt-auto inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-5"
+          [ngClass]="d.clave === seleccionado ? 'bg-white/25 text-white' : 'bg-brand-100 text-brand-800'">{{ d.citas.length }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Citas del día -->
+  <div>
+    <h2 class="font-bold capitalize">{{ fechaSeleccionada | date: 'EEEE d \'de\' MMMM' }}</h2>
+    <p class="text-xs text-zinc-500">{{ citasDelDia.length }} cita{{ citasDelDia.length === 1 ? '' : 's' }}</p>
+
+    <div *ngIf="cargando" class="mt-3 space-y-3" aria-hidden="true">
+      <div *ngFor="let n of [1,2]" class="h-20 animate-pulse rounded-2xl border border-zinc-200 bg-white"></div>
+    </div>
+
+    <div *ngIf="!cargando && citasDelDia.length === 0" class="mt-3 flex flex-col items-center rounded-2xl border-2 border-dashed border-zinc-300 bg-white px-6 py-10 text-center">
+      <span class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700"><i class="ph ph-calendar-blank text-2xl"></i></span>
+      <p class="mt-3 text-sm font-semibold">No hay citas este día</p>
+    </div>
+
+    <ul class="mt-3 space-y-3">
+      <li *ngFor="let c of citasDelDia; let i = index">
+        <button type="button" (click)="abrir(c)" class="animate-fade-up group w-full rounded-2xl border border-zinc-200 bg-white p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+          [class.opacity-60]="c.status === 'CANCELLED'" [style.animation-delay.ms]="i * 40">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-sm font-extrabold tracking-tight">{{ c.startsAt | date: 'HH:mm' }} <span class="font-medium text-zinc-400">– {{ c.endsAt | date: 'HH:mm' }}</span></span>
+            <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="estado(c).clase">{{ estado(c).texto }}</span>
+          </div>
+          <p class="mt-2 truncate font-semibold" [class.line-through]="c.status === 'CANCELLED'">{{ nombreCita(c) }}</p>
+          <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
+            <span class="rounded-full px-2.5 py-0.5 font-semibold" [ngClass]="claseTipo(tipo(c))">{{ etiquetaTipo(tipo(c)) }}</span>
+            <span *ngIf="c.cobro" class="inline-flex items-center gap-1 font-semibold" [ngClass]="c.cobro.estado === 'pagado' ? 'text-emerald-700' : 'text-amber-700'">
+              <i class="ph" [ngClass]="c.cobro.estado === 'pagado' ? 'ph-check-circle' : 'ph-clock'"></i> {{ c.cobro.estado === 'pagado' ? 'Pagado' : 'No pagado' }}
+            </span>
+            <span *ngIf="!c.cobro" class="text-zinc-400">Sin cobro</span>
+          </div>
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Detalle de la cita -->
+<div *ngIf="abierta as c" class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Detalle de la cita">
+  <div class="absolute inset-0 bg-zinc-900/40" (click)="cerrar()"></div>
+  <aside class="animate-fade-up relative flex h-full w-full max-w-lg flex-col overflow-y-auto bg-zinc-50 shadow-2xl">
+    <div class="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-zinc-200 bg-white px-5 py-4">
+      <div class="min-w-0">
+        <p class="truncate font-extrabold">{{ nombreCita(c) }}</p>
+        <p class="text-xs capitalize text-zinc-500">{{ c.startsAt | date: 'EEEE d MMM · HH:mm' }} – {{ c.endsAt | date: 'HH:mm' }}</p>
+      </div>
+      <button type="button" (click)="cerrar()" aria-label="Cerrar" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-zinc-100"><i class="ph ph-x text-lg"></i></button>
+    </div>
+
+    <div class="space-y-5 p-5">
+      <!-- Cita -->
+      <section class="rounded-2xl border border-zinc-200 bg-white p-4">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="estado(c).clase">{{ estado(c).texto }}</span>
+          <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="claseTipo(tipo(c))">{{ etiquetaTipo(tipo(c)) }}</span>
+          <span class="text-xs text-zinc-500">{{ c.modality === 'VIDEO' ? 'Videollamada' : c.modality === 'IN_PERSON' ? 'Presencial' : c.modality }}</span>
+        </div>
+        <a *ngIf="c.meetingUrl" [attr.href]="c.meetingUrl" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"><i class="ph ph-video-camera"></i> Abrir enlace de la videollamada</a>
+        <p *ngIf="c.note" class="mt-3 whitespace-pre-line text-sm text-zinc-600"><span class="font-semibold text-zinc-800">Motivo:</span> {{ c.note }}</p>
+      </section>
+
+      <!-- Cliente -->
+      <section>
+        <h3 class="mb-2 flex items-center gap-2 text-sm font-bold"><i class="ph ph-identification-card text-lg text-brand-700"></i> Información del cliente</h3>
+        <div *ngFor="let p of personas(c)" class="mb-3 rounded-2xl border border-zinc-200 bg-white p-4">
+          <div class="flex items-center justify-between gap-2">
+            <p class="font-semibold">{{ p.nombre }}</p>
+            <span class="text-xs font-semibold" [ngClass]="p.enCrm ? 'text-emerald-700' : 'text-amber-700'">{{ p.enCrm ? 'En el CRM' : 'Aún no está en el CRM' }}</span>
+          </div>
+          <p *ngIf="c.partner" class="text-xs text-zinc-400">{{ p.rol }}</p>
+          <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Correo</dt><dd class="break-all font-medium">{{ p.correo || '—' }}</dd></div>
+            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Teléfono</dt><dd class="font-medium">{{ p.telefono || '—' }}</dd></div>
+            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Cédula</dt><dd class="font-medium">{{ p.cedula || '—' }}</dd></div>
+            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Edad</dt><dd class="font-medium">{{ p.edad != null ? p.edad + ' años' : '—' }}</dd></div>
+          </dl>
+        </div>
+        <a *ngIf="expediente(c) as exp" [routerLink]="['/clientes', exp]" class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800">
+          Abrir expediente completo <i class="ph ph-arrow-right"></i>
+        </a>
+        <p *ngIf="!expediente(c)" class="text-xs text-zinc-500">Se registra en el CRM al confirmar la cita en Florece.</p>
+      </section>
+
+      <!-- Billetera -->
+      <section>
+        <h3 class="mb-2 flex items-center gap-2 text-sm font-bold"><i class="ph ph-wallet text-lg text-brand-700"></i> Billetera</h3>
+
+        <div *ngIf="c.cobro as co" class="rounded-2xl border border-zinc-200 bg-white p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="truncate font-semibold">{{ co.concepto }}</p>
+              <span class="mt-1 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="co.estado === 'pagado' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'">
+                <i class="ph text-sm" [ngClass]="co.estado === 'pagado' ? 'ph-check-circle' : 'ph-clock'"></i> {{ co.estado === 'pagado' ? 'Pagado' : 'No pagado' }}
+              </span>
+            </div>
+            <p class="text-lg font-extrabold tracking-tight">{{ dinero(co.monto, co.moneda) }}</p>
+          </div>
+          <p *ngIf="co.estado === 'pagado'" class="mt-2 text-xs text-zinc-500">
+            Pagado el {{ co.fecha_pago | date: 'dd/MM/yyyy' }}<ng-container *ngIf="co.metodo"> · {{ co.metodo }}</ng-container> ·
+            {{ co.factura_numero }} {{ co.factura_enviada ? '· enviada al correo' : '· sin enviar' }}
+          </p>
+          <p *ngIf="co.estado === 'pendiente' && co.recordatorios > 0" class="mt-2 text-xs text-zinc-500">{{ co.recordatorios }} recordatorio{{ co.recordatorios === 1 ? '' : 's' }} enviado{{ co.recordatorios === 1 ? '' : 's' }}</p>
+
+          <div class="mt-3 flex flex-wrap gap-2">
+            <ng-container *ngIf="co.estado === 'pendiente'">
+              <button type="button" (click)="pagando = !pagando" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700 active:scale-95"><i class="ph ph-check-circle"></i> Marcar como pagado</button>
+              <button type="button" (click)="recordar(co)" [disabled]="ocupado" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95 disabled:opacity-60"><i class="ph" [ngClass]="ocupado ? 'ph-spinner animate-spin' : 'ph-bell-ringing'"></i> Enviar recordatorio</button>
+            </ng-container>
+            <button *ngIf="co.estado === 'pagado'" type="button" (click)="reenviar(co)" [disabled]="ocupado" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95 disabled:opacity-60"><i class="ph" [ngClass]="ocupado ? 'ph-spinner animate-spin' : 'ph-paper-plane-tilt'"></i> {{ co.factura_enviada ? 'Reenviar factura' : 'Enviar factura' }}</button>
+            <a *ngIf="co.comprobante" [attr.href]="co.comprobante" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50"><i class="ph ph-paperclip"></i> Ver comprobante</a>
+          </div>
+
+          <div *ngIf="pagando && co.estado === 'pendiente'" class="animate-fade-up mt-3 rounded-xl bg-zinc-50 p-3">
+            <p class="text-xs text-zinc-500">Al confirmar, se registra el pago y se envía la factura al correo del cliente.</p>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+              <select name="a-metodo" [(ngModel)]="formPago.metodo" aria-label="Método de pago" class="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
+                <option value="">Método de pago</option>
+                <option *ngFor="let m of metodos" [value]="m">{{ m }}</option>
+              </select>
+              <input name="a-ref" [(ngModel)]="formPago.referencia" type="text" maxlength="120" placeholder="Referencia (opcional)" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm placeholder:text-zinc-400 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            </div>
+            <button type="button" (click)="confirmarPago(co)" [disabled]="ocupado" class="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 active:scale-95 disabled:opacity-60"><i class="ph" [ngClass]="ocupado ? 'ph-spinner animate-spin' : 'ph-check'"></i> Confirmar pago y enviar factura</button>
+          </div>
+        </div>
+
+        <div *ngIf="!c.cobro" class="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-4">
+          <p class="text-sm font-semibold">Esta cita aún no tiene cobro</p>
+          <ng-container *ngIf="expediente(c); else sinCliente">
+            <div class="mt-3 flex items-end gap-2">
+              <div class="flex-1">
+                <label for="a-monto" class="mb-1.5 block text-xs font-semibold text-zinc-500">Monto ({{ c.currency }})</label>
+                <input id="a-monto" name="a-monto" [(ngModel)]="montoCobro" type="number" min="0" step="0.01" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+              </div>
+              <button type="button" (click)="crearCobro(c)" [disabled]="ocupado" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800 active:scale-95 disabled:opacity-60"><i class="ph" [ngClass]="ocupado ? 'ph-spinner animate-spin' : 'ph-plus'"></i> Crear cobro</button>
+            </div>
+          </ng-container>
+          <ng-template #sinCliente><p class="mt-1 text-xs text-zinc-500">Primero hay que registrar al cliente en el CRM (se hace al confirmar la cita en Florece).</p></ng-template>
+        </div>
+      </section>
+    </div>
+  </aside>
+</div>

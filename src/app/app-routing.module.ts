@@ -8,6 +8,7 @@ import { ClientesComponent } from './components/clientes/clientes.component';
 import { ExpedienteComponent } from './components/expediente/expediente.component';
 import { ReunionesComponent } from './components/reuniones/reuniones.component';
 import { SalaComponent } from './components/sala/sala.component';
+import { AgendaComponent } from './components/agenda/agenda.component';
 import { NotasComponent } from './components/notas/notas.component';
 import { BibliotecaComponent } from './components/biblioteca/biblioteca.component';
 
@@ -22,6 +23,7 @@ const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: 'dashboard', component: DashboardComponent },
+      { path: 'agenda', component: AgendaComponent },
       { path: 'clientes', component: ClientesComponent },
       { path: 'clientes/:id', component: ExpedienteComponent },
       { path: 'notas', component: NotasComponent },
