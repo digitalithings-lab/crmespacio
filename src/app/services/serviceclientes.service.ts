@@ -86,6 +86,8 @@ export interface CitaAgenda {
   paid: boolean
   patient: { fullName: string | null; idNumber: string | null; age: number | null; email: string | null; phone: string | null }
   partner: { fullName: string | null; idNumber: string | null; age?: number | null; email: string | null; phone: string | null } | null
+  cliente1: Cliente | null
+  cliente2: Cliente | null
   clientes: Cliente[]
   cobro: Cobro | null
 }
@@ -129,6 +131,13 @@ export class ServiceclientesService {
   // ---- Agenda (citas de Florece) ----
   obtenerAgenda(desde: Date, hasta: Date): Observable<any> {
     return this.http.get<any>(`${api}/agenda`, { params: { desde: desde.toISOString(), hasta: hasta.toISOString() } })
+  }
+
+  registrarCita(data: any): Observable<any> {
+    return this.http.post<any>(`${api}/agenda/registrar`, data)
+  }
+  editarCliente(idexpediente: string, data: any): Observable<any> {
+    return this.http.patch<any>(`${api}/cliente/${idexpediente}`, data)
   }
 
   // ---- Billetera ----

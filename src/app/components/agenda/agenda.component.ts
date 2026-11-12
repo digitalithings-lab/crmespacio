@@ -14,13 +14,13 @@ const ESTADOS: { [k: string]: { texto: string; clase: string } } = {
   NO_SHOW: { texto: 'No asistió', clase: 'bg-red-100 text-red-700' },
 }
 
-// «Ana María López Pérez» → nombre y apellido (el CRM los guarda por separado)
-function separarNombre(completo: string): { nombre: string; apellido: string } {
-  const p = completo.trim().split(/\s+/)
-  if (p.length === 1) return { nombre: p[0], apellido: '-' }
-  if (p.length === 2) return { nombre: p[0], apellido: p[1] }
-  if (p.length === 3) return { nombre: p[0], apellido: p.slice(1).join(' ') }
-  return { nombre: p.slice(0, 2).join(' '), apellido: p.slice(2).join(' ') }
+// Valores provisionales con los que el CRM registra lo que la cita no traía
+const esProvisional = {
+  cedula: (v?: string | null) => !v || v.startsWith('PEND-'),
+  correo: (v?: string | null) => !v || v.endsWith('.invalid'),
+  telefono: (v?: string | null) => !v || v.trim() === '-',
+  nombre: (v?: string | null) => !v || v === 'Sin nombre',
+  edad: (v?: number | null) => v == null || v === 0,
 }
 
 const clave = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -139,61 +139,75 @@ export class AgendaComponent implements OnInit {
 
   personas(c: CitaAgenda) {
     const lista = [
-      { rol: c.partner ? 'Persona 1' : 'Cliente', f: c.patient, crm: c.clientes.find(x => x.cedula === c.patient?.idNumber) },
-      ...(c.partner ? [{ rol: 'Pareja', f: c.partner as any, crm: c.clientes.find(x => x.cedula === c.partner!.idNumber) }] : []),
+      { rol: 1, etiqueta: c.partner ? 'Persona 1' : 'Cliente', f: c.patient as any, crm: c.cliente1 },
+      ...(c.partner ? [{ rol: 2, etiqueta: 'Pareja', f: c.partner as any, crm: c.cliente2 }] : []),
     ]
-    return lista.map(p => ({
-      rol: p.rol,
-      nombre: p.crm ? `${p.crm.nombre} ${p.crm.apellido}` : p.f?.fullName ?? 'Sin nombre',
-      correo: p.crm?.correo ?? p.f?.email,
-      telefono: p.crm?.telefono ?? p.f?.phone,
-      cedula: p.crm?.cedula ?? p.f?.idNumber,
-      edad: p.crm?.edad ?? p.f?.age,
-      enCrm: !!p.crm,
-    }))
+    return lista.map(p => {
+      const crm = p.crm
+      const cedula = crm ? (esProvisional.cedula(crm.cedula) ? '' : crm.cedula) : p.f?.idNumber ?? ''
+      const correo = crm ? (esProvisional.correo(crm.correo) ? '' : crm.correo) : p.f?.email ?? ''
+      const telefono = crm ? (esProvisional.telefono(crm.telefono) ? '' : crm.telefono) : p.f?.phone ?? ''
+      const nombre = crm ? (esProvisional.nombre(crm.nombre) ? '' : `${crm.nombre} ${crm.apellido === '-' ? '' : crm.apellido}`.trim()) : p.f?.fullName ?? ''
+      const edad = crm ? (esProvisional.edad(crm.edad) ? null : crm.edad) : p.f?.age ?? null
+      const faltan = [!nombre && 'nombre', !cedula && 'cédula', !correo && 'correo', !telefono && 'teléfono', edad == null && 'edad'].filter(Boolean) as string[]
+      return { rol: p.rol, etiqueta: p.etiqueta, crm, nombre, cedula, correo, telefono, edad, faltan, enCrm: !!crm }
+    })
+  }
+
+  // ¿Alguna persona de la cita tiene datos por completar?
+  incompleta(c: CitaAgenda): boolean { return this.personas(c).some(p => p.faltan.length > 0) }
+
+  // ---- Editar los datos de una persona ya registrada ----
+  public editando: number | null = null
+  public formEdicion = { nombre: '', apellido: '', correo: '', cedula: '', telefono: '', edad: '' as string | number }
+  public guardando = false
+
+  editar(p: { rol: number; crm: any; nombre: string; cedula: string; correo: string; telefono: string; edad: number | null }) {
+    if (!p.crm) return
+    this.editando = p.rol
+    this.formEdicion = {
+      nombre: esProvisional.nombre(p.crm.nombre) ? '' : p.crm.nombre,
+      apellido: p.crm.apellido === '-' ? '' : p.crm.apellido,
+      correo: p.correo, cedula: p.cedula, telefono: p.telefono, edad: p.edad ?? ''
+    }
+  }
+
+  guardarEdicion(p: { crm: any }) {
+    if (this.guardando || !p.crm) return
+    const f = this.formEdicion
+    this.guardando = true
+    this.service.editarCliente(p.crm.idexpediente, {
+      nombre: f.nombre, apellido: f.apellido, correo: f.correo, cedula: f.cedula, telefono: f.telefono,
+      edad: f.edad === '' ? 0 : Number(f.edad)
+    }).subscribe({
+      next: () => { this.guardando = false; this.editando = null; this.toast.success('Datos guardados'); this.cargar() },
+      error: (err) => { this.guardando = false; this.toast.error(err.error?.message?.trim() || 'No se pudieron guardar los datos') }
+    })
   }
 
   // ---- Registrar en el CRM a quien aún no está ----
   faltanEnCrm(c: CitaAgenda): boolean { return this.personas(c).some(p => !p.enCrm) }
 
-  // Datos que faltan para registrar a las personas que aún no están en el CRM
-  datosFaltantes(c: CitaAgenda): string[] {
-    const faltan: string[] = []
-    for (const p of this.personas(c).filter(x => !x.enCrm)) {
-      const quien = c.partner ? ` (${p.rol.toLowerCase()})` : ''
-      const f = [!p.nombre || p.nombre === 'Sin nombre' ? 'nombre' : '', !p.cedula ? 'cédula' : '', !p.correo ? 'correo' : '', !p.telefono ? 'teléfono' : '', p.edad == null ? 'fecha de nacimiento' : ''].filter(Boolean)
-      if (f.length) faltan.push(`${f.join(', ')}${quien}`)
-    }
-    return faltan
-  }
-
-  async registrar(c: CitaAgenda) {
+  // Registra a quien aún no está. Lo que falte queda como dato provisional para completarlo después.
+  registrar(c: CitaAgenda) {
     if (this.registrando) return
-    const faltan = this.datosFaltantes(c)
-    if (faltan.length) return this.toast.error(`Faltan datos para registrar: ${faltan.join('; ')}`)
     this.registrando = true
-    const pendientes = this.personas(c).filter(p => !p.enCrm)
-    const grupo = c.partner ? (c.crmGroupId || crypto.randomUUID()) : undefined
-    try {
-      for (const p of pendientes) {
-        const { nombre, apellido } = separarNombre(p.nombre)
-        await new Promise<void>((ok, fail) =>
-          this.service.crearCliente({
-            nombre, apellido, correo: p.correo, cedula: p.cedula, telefono: p.telefono,
-            edad: p.edad, tipo: this.tipo(c), reutilizar: true, ...(grupo ? { idgrupo: grupo } : {})
-          }).subscribe({ next: () => ok(), error: (e) => fail(e) })
-        )
-      }
-      this.toast.success(pendientes.length > 1 ? 'Clientes registrados en el CRM' : 'Cliente registrado en el CRM')
-      this.cargar()
-    } catch (e: any) {
-      this.toast.error(e?.error?.message?.trim() || 'No se pudo registrar en el CRM')
-    }
-    this.registrando = false
+    const personas = this.personas(c).map(p => ({
+      rol: p.rol, nombre: p.nombre, cedula: p.cedula, correo: p.correo, telefono: p.telefono, edad: p.edad
+    }))
+    this.service.registrarCita({ cita_ref: c.id, tipo: this.tipo(c), idgrupo: c.crmGroupId || undefined, personas }).subscribe({
+      next: () => {
+        this.registrando = false
+        const faltan = personas.some(p => !p.nombre || !p.cedula || !p.correo || !p.telefono || p.edad == null)
+        this.toast.success(faltan ? 'Registrado. Completa los datos que faltan' : 'Cliente registrado en el CRM')
+        this.cargar()
+      },
+      error: (err) => { this.registrando = false; this.toast.error(err.error?.message?.trim() || 'No se pudo registrar en el CRM') }
+    })
   }
 
   // Expediente al que pertenece la cita (el de la primera persona registrada en el CRM)
-  expediente(c: CitaAgenda): string | null { return c.clientes[0]?.idexpediente ?? null }
+  expediente(c: CitaAgenda): string | null { return (c.cliente1 ?? c.cliente2)?.idexpediente ?? null }
 
   nombreCita(c: CitaAgenda): string {
     const a = c.patient?.fullName?.split(' ')[0]

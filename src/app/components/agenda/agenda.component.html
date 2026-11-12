@@ -65,6 +65,7 @@
               <i class="ph" [ngClass]="c.cobro.estado === 'pagado' ? 'ph-check-circle' : 'ph-clock'"></i> {{ c.cobro.estado === 'pagado' ? 'Pagado' : 'No pagado' }}
             </span>
             <span *ngIf="!c.cobro" class="text-zinc-400">Sin cobro</span>
+            <span *ngIf="incompleta(c)" class="inline-flex items-center gap-1 font-semibold text-amber-700"><i class="ph ph-warning"></i> Datos por completar</span>
           </div>
         </button>
       </li>
@@ -101,25 +102,53 @@
         <h3 class="mb-2 flex items-center gap-2 text-sm font-bold"><i class="ph ph-identification-card text-lg text-brand-700"></i> Información del cliente</h3>
         <div *ngFor="let p of personas(c)" class="mb-3 rounded-2xl border border-zinc-200 bg-white p-4">
           <div class="flex items-center justify-between gap-2">
-            <p class="font-semibold">{{ p.nombre }}</p>
+            <p class="font-semibold">{{ p.nombre || 'Sin nombre' }}</p>
             <span class="text-xs font-semibold" [ngClass]="p.enCrm ? 'text-emerald-700' : 'text-amber-700'">{{ p.enCrm ? 'En el CRM' : 'Aún no está en el CRM' }}</span>
           </div>
-          <p *ngIf="c.partner" class="text-xs text-zinc-400">{{ p.rol }}</p>
-          <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Correo</dt><dd class="break-all font-medium">{{ p.correo || '—' }}</dd></div>
-            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Teléfono</dt><dd class="font-medium">{{ p.telefono || '—' }}</dd></div>
-            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Cédula</dt><dd class="font-medium">{{ p.cedula || '—' }}</dd></div>
-            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Edad</dt><dd class="font-medium">{{ p.edad != null ? p.edad + ' años' : '—' }}</dd></div>
+          <p *ngIf="c.partner" class="text-xs text-zinc-400">{{ p.etiqueta }}</p>
+
+          <p *ngIf="p.faltan.length" class="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+            <i class="ph ph-warning text-sm"></i><span>Falta: {{ p.faltan.join(', ') }}</span>
+          </p>
+
+          <dl *ngIf="editando !== p.rol" class="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Correo</dt><dd class="break-all font-medium" [class.text-amber-700]="!p.correo">{{ p.correo || 'Falta' }}</dd></div>
+            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Teléfono</dt><dd class="font-medium" [class.text-amber-700]="!p.telefono">{{ p.telefono || 'Falta' }}</dd></div>
+            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Cédula</dt><dd class="font-medium" [class.text-amber-700]="!p.cedula">{{ p.cedula || 'Falta' }}</dd></div>
+            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Edad</dt><dd class="font-medium" [class.text-amber-700]="p.edad == null">{{ p.edad != null ? p.edad + ' años' : 'Falta' }}</dd></div>
           </dl>
-        </div>
-        <div *ngIf="faltanEnCrm(c)" class="mb-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-          <p class="text-sm font-semibold text-amber-900">{{ c.partner ? 'Hay personas de esta cita sin registrar' : 'Este cliente aún no está registrado' }}</p>
-          <p *ngIf="datosFaltantes(c).length" class="mt-1 text-xs text-amber-800">Faltan datos en la cita: {{ datosFaltantes(c).join('; ') }}.</p>
-          <button type="button" (click)="registrar(c)" [disabled]="registrando || datosFaltantes(c).length > 0"
-            class="mt-3 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
-            <ng-container *ngIf="!registrando"><i class="ph ph-user-plus text-base"></i> Registrar en el CRM</ng-container>
-            <ng-container *ngIf="registrando"><i class="ph ph-spinner animate-spin text-lg"></i> Registrando…</ng-container>
-          </button>
+          <button *ngIf="p.enCrm && editando !== p.rol" type="button" (click)="editar(p)" class="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95"><i class="ph ph-pencil-simple"></i> Editar datos</button>
+
+          <form *ngIf="editando === p.rol" (ngSubmit)="guardarEdicion(p)" class="animate-fade-up mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <label class="mb-1 block text-xs font-semibold text-zinc-500" [for]="'e-nom' + p.rol">Nombre</label>
+              <input [id]="'e-nom' + p.rol" name="nombre" [(ngModel)]="formEdicion.nombre" type="text" maxlength="100" class="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            </div>
+            <div>
+              <label class="mb-1 block text-xs font-semibold text-zinc-500" [for]="'e-ape' + p.rol">Apellido</label>
+              <input [id]="'e-ape' + p.rol" name="apellido" [(ngModel)]="formEdicion.apellido" type="text" maxlength="100" class="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            </div>
+            <div class="col-span-2">
+              <label class="mb-1 block text-xs font-semibold text-zinc-500" [for]="'e-cor' + p.rol">Correo</label>
+              <input [id]="'e-cor' + p.rol" name="correo" [(ngModel)]="formEdicion.correo" type="email" maxlength="120" class="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            </div>
+            <div>
+              <label class="mb-1 block text-xs font-semibold text-zinc-500" [for]="'e-ced' + p.rol">Cédula</label>
+              <input [id]="'e-ced' + p.rol" name="cedula" [(ngModel)]="formEdicion.cedula" type="text" maxlength="40" class="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            </div>
+            <div>
+              <label class="mb-1 block text-xs font-semibold text-zinc-500" [for]="'e-tel' + p.rol">Teléfono</label>
+              <input [id]="'e-tel' + p.rol" name="telefono" [(ngModel)]="formEdicion.telefono" type="tel" maxlength="40" class="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            </div>
+            <div>
+              <label class="mb-1 block text-xs font-semibold text-zinc-500" [for]="'e-eda' + p.rol">Edad</label>
+              <input [id]="'e-eda' + p.rol" name="edad" [(ngModel)]="formEdicion.edad" type="number" min="0" max="120" class="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            </div>
+            <div class="col-span-2 flex gap-2">
+              <button type="submit" [disabled]="guardando" class="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2 text-xs font-semibold text-white transition hover:bg-brand-800 active:scale-95 disabled:opacity-60"><i class="ph" [ngClass]="guardando ? 'ph-spinner animate-spin' : 'ph-check'"></i> Guardar</button>
+              <button type="button" (click)="editando = null" class="rounded-lg px-3 py-2 text-xs font-semibold text-zinc-500 hover:text-zinc-800">Cancelar</button>
+            </div>
+          </form>
         </div>
         <a *ngIf="expediente(c) as exp" [routerLink]="['/clientes', exp]" class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800">
           Abrir expediente completo <i class="ph ph-arrow-right"></i>
