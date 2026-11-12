@@ -100,6 +100,15 @@
       <!-- Cliente -->
       <section>
         <h3 class="mb-2 flex items-center gap-2 text-sm font-bold"><i class="ph ph-identification-card text-lg text-brand-700"></i> Información del cliente</h3>
+        <div *ngIf="faltanEnCrm(c)" class="mb-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p class="text-sm font-semibold text-amber-900">{{ c.partner ? 'Hay personas de esta cita sin registrar' : 'Este cliente aún no está registrado' }}</p>
+          <p class="mt-1 text-xs text-amber-800">Lo que falte en la cita queda marcado para que lo completes aquí mismo después.</p>
+          <button type="button" (click)="registrar(c)" [disabled]="registrando"
+            class="mt-3 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+            <ng-container *ngIf="!registrando"><i class="ph ph-user-plus text-base"></i> Registrar en el CRM</ng-container>
+            <ng-container *ngIf="registrando"><i class="ph ph-spinner animate-spin text-lg"></i> Registrando…</ng-container>
+          </button>
+        </div>
         <div *ngFor="let p of personas(c)" class="mb-3 rounded-2xl border border-zinc-200 bg-white p-4">
           <div class="flex items-center justify-between gap-2">
             <p class="font-semibold">{{ p.nombre || 'Sin nombre' }}</p>
@@ -209,7 +218,7 @@
               <button type="button" (click)="crearCobro(c)" [disabled]="ocupado" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800 active:scale-95 disabled:opacity-60"><i class="ph" [ngClass]="ocupado ? 'ph-spinner animate-spin' : 'ph-plus'"></i> Crear cobro</button>
             </div>
           </ng-container>
-          <ng-template #sinCliente><p class="mt-1 text-xs text-zinc-500">Primero hay que registrar al cliente en el CRM (se hace al confirmar la cita en Florece).</p></ng-template>
+          <ng-template #sinCliente><p class="mt-1 text-xs text-zinc-500">Primero registra al cliente en el CRM con el botón de arriba.</p></ng-template>
         </div>
       </section>
     </div>
