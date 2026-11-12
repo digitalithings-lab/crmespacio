@@ -6,36 +6,102 @@
   <span class="max-w-0 overflow-hidden whitespace-nowrap text-sm font-semibold opacity-0 transition-all duration-300 group-hover:max-w-[7rem] group-hover:opacity-100 group-focus-visible:max-w-[7rem] group-focus-visible:opacity-100">Nueva nota</span>
 </button>
 
-<!-- Panel para escribir -->
-<div *ngIf="abierto" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="nota-title">
-  <div (click)="cerrar()" class="animate-fade-in absolute inset-0 bg-zinc-900/40 backdrop-blur-sm"></div>
+<!-- Panel: ventana centrada, o panel lateral en la videollamada -->
+<div *ngIf="abierto" class="fixed z-50"
+  [ngClass]="lateral ? 'inset-y-0 right-0 w-full sm:w-[26rem]' : 'inset-0 flex items-end justify-center sm:items-center sm:p-4'"
+  role="dialog" [attr.aria-modal]="!lateral" aria-labelledby="nota-title">
+  <div *ngIf="!lateral" (click)="cerrar()" class="animate-fade-in absolute inset-0 bg-zinc-900/40 backdrop-blur-sm"></div>
 
-  <form #f="ngForm" (ngSubmit)="guardar()" class="animate-slide-up sm:animate-scale-in relative flex max-h-[92dvh] w-full max-w-2xl flex-col rounded-t-3xl bg-white text-zinc-900 shadow-xl sm:rounded-2xl">
-    <div class="flex items-center justify-between gap-4 border-b border-zinc-100 px-6 py-4 sm:px-8">
-      <h2 id="nota-title" class="text-xl font-extrabold tracking-tight">Nueva nota</h2>
+  <form #f="ngForm" (ngSubmit)="guardar()" class="relative flex w-full flex-col bg-white text-zinc-900 shadow-xl"
+    [ngClass]="lateral ? 'animate-slide-up h-full border-l border-zinc-200 shadow-2xl' : 'animate-slide-up sm:animate-scale-in max-h-[92dvh] max-w-2xl rounded-t-3xl sm:rounded-2xl'">
+    <div class="flex items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4 sm:px-6">
+      <h2 id="nota-title" class="text-lg font-extrabold tracking-tight">{{ lateral ? 'Notas y expediente' : 'Nueva nota' }}</h2>
       <button type="button" (click)="cerrar()" aria-label="Cerrar" class="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700"><i class="ph ph-x text-lg"></i></button>
     </div>
 
-    <div class="flex-1 space-y-5 overflow-y-auto px-6 py-6 sm:px-8">
+    <!-- Pestañas -->
+    <div class="flex gap-1 border-b border-zinc-100 px-3" role="tablist">
+      <button type="button" role="tab" [attr.aria-selected]="pestana === 'nota'" (click)="pestana = 'nota'" class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'nota' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
+        <i class="ph ph-note-pencil text-base"></i> Nueva
+        <span class="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-700 transition-transform" [ngClass]="pestana === 'nota' ? 'scale-x-100' : 'scale-x-0'"></span>
+      </button>
+      <button type="button" role="tab" [attr.aria-selected]="pestana === 'notas'" (click)="pestana = 'notas'" class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'notas' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
+        <i class="ph ph-notebook text-base"></i> Anteriores
+        <span class="rounded-full bg-zinc-100 px-1.5 text-xs text-zinc-600">{{ notas.length }}</span>
+        <span class="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-700 transition-transform" [ngClass]="pestana === 'notas' ? 'scale-x-100' : 'scale-x-0'"></span>
+      </button>
+      <button type="button" role="tab" [attr.aria-selected]="pestana === 'expediente'" (click)="pestana = 'expediente'" class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'expediente' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
+        <i class="ph ph-identification-card text-base"></i> Expediente
+        <span class="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-700 transition-transform" [ngClass]="pestana === 'expediente' ? 'scale-x-100' : 'scale-x-0'"></span>
+      </button>
+    </div>
 
-      <div>
-        <label for="n-cliente" class="mb-2 block text-sm font-semibold">Cliente</label>
-        <select id="n-cliente" name="idexpediente" [(ngModel)]="idexpediente" required
-          class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-700 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
-          <option [ngValue]="null" disabled>{{ cargandoClientes ? 'Cargando clientes…' : 'Selecciona un cliente' }}</option>
-          <option *ngFor="let o of opciones" [ngValue]="o.valor">{{ o.etiqueta }}</option>
-        </select>
+    <div class="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+      <!-- Nueva nota -->
+      <div *ngIf="pestana === 'nota'" class="space-y-5">
+        <div>
+          <label for="n-cliente" class="mb-2 block text-sm font-semibold">Cliente</label>
+          <select id="n-cliente" name="idexpediente" [ngModel]="idexpediente" (ngModelChange)="alCambiarCliente($event)" required
+            class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-700 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
+            <option [ngValue]="null" disabled>{{ cargandoClientes ? 'Cargando clientes…' : 'Selecciona un cliente' }}</option>
+            <option *ngFor="let o of opciones" [ngValue]="o.valor">{{ o.etiqueta }}</option>
+          </select>
+        </div>
+        <div>
+          <label for="n-texto" class="mb-2 block text-sm font-semibold">Nota</label>
+          <textarea id="n-texto" name="texto" [(ngModel)]="texto" required [attr.rows]="lateral ? 10 : 9" placeholder="Escribe aquí tu nota…"
+            class="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10"></textarea>
+        </div>
       </div>
 
-      <div>
-        <label for="n-texto" class="mb-2 block text-sm font-semibold">Nota</label>
-        <textarea id="n-texto" name="texto" [(ngModel)]="texto" required rows="9" placeholder="Escribe aquí tu nota…"
-          class="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10"></textarea>
+      <!-- Notas anteriores -->
+      <div *ngIf="pestana === 'notas'">
+        <p *ngIf="!idexpediente" class="text-sm text-zinc-500">Elige un cliente en la pestaña "Nueva".</p>
+        <div *ngIf="cargandoNotas" class="space-y-3" aria-hidden="true"><div *ngFor="let n of [1,2]" class="h-20 animate-pulse rounded-xl bg-zinc-100"></div></div>
+        <p *ngIf="idexpediente && !cargandoNotas && notas.length === 0" class="text-sm text-zinc-500">Aún no hay notas de este cliente.</p>
+        <ul class="space-y-3">
+          <li *ngFor="let n of notas" class="rounded-xl border border-zinc-200 p-4">
+            <span class="text-xs font-medium text-zinc-400">{{ n.fecha_creacion | date: 'dd/MM/yyyy · HH:mm' }}</span>
+            <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-700">{{ n.texto }}</p>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Expediente -->
+      <div *ngIf="pestana === 'expediente'" class="space-y-4">
+        <p *ngIf="!idexpediente" class="text-sm text-zinc-500">Elige un cliente en la pestaña "Nueva".</p>
+        <div *ngIf="cargandoExpediente" class="h-28 animate-pulse rounded-xl bg-zinc-100" aria-hidden="true"></div>
+        <div *ngFor="let p of personas" class="rounded-xl border border-zinc-200 p-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="font-semibold">{{ p.nombre }} {{ p.apellido === '-' ? '' : p.apellido }}</p>
+            <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="claseTipo(p.tipo)">{{ etiquetaTipo(p.tipo) }}</span>
+          </div>
+          <dl class="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div class="col-span-2"><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Correo</dt><dd class="break-all font-medium">{{ p.correo }}</dd></div>
+            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Teléfono</dt><dd class="font-medium">{{ p.telefono }}</dd></div>
+            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Cédula</dt><dd class="font-medium">{{ p.cedula }}</dd></div>
+            <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Edad</dt><dd class="font-medium">{{ p.edad }} años</dd></div>
+          </dl>
+        </div>
+
+        <div *ngIf="idexpediente">
+          <p class="mb-2 text-sm font-bold">Archivos ({{ archivos.length }})</p>
+          <p *ngIf="archivos.length === 0" class="text-sm text-zinc-500">No hay archivos en este expediente.</p>
+          <ul class="space-y-2">
+            <li *ngFor="let a of archivos">
+              <a [attr.href]="a.url" target="_blank" rel="noopener" class="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 transition hover:border-brand-200 hover:bg-brand-50/40">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500"><i class="ph text-lg" [ngClass]="'ph-' + icono(a.documento)"></i></span>
+                <span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold">{{ a.documento }}</span><span class="text-xs text-zinc-500">{{ tamano(a.tamano) }}</span></span>
+              </a>
+            </li>
+          </ul>
+          <a [attr.href]="'/clientes/' + idexpediente" target="_blank" rel="noopener" class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800">Abrir expediente completo <i class="ph ph-arrow-square-out"></i></a>
+        </div>
       </div>
     </div>
 
-    <div class="flex justify-end gap-3 border-t border-zinc-100 px-6 py-4 sm:px-8">
-      <button type="button" (click)="cerrar()" class="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50">Cancelar</button>
+    <div *ngIf="pestana === 'nota'" class="flex justify-end gap-3 border-t border-zinc-100 px-5 py-4 sm:px-6">
+      <button type="button" (click)="cerrar()" class="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50">{{ lateral ? 'Cerrar' : 'Cancelar' }}</button>
       <button type="submit" [disabled]="f.invalid || guardando"
         class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
         <ng-container *ngIf="!guardando"><i class="ph ph-floppy-disk text-base"></i> Guardar nota</ng-container>

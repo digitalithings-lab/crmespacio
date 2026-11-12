@@ -26,6 +26,11 @@ export class ServicesalaService {
     return this.http.post<any>(`${api}/crearsala`, { idexpediente, nombre })
   }
 
+  // Servidores STUN/TURN para las videollamadas
+  obtenerIce(): Observable<any> {
+    return this.http.get<any>(`${api}/sala/ice`)
+  }
+
   listarSalas(idexpediente?: string): Observable<any> {
     return this.http.get<any>(idexpediente ? `${api}/salas/${idexpediente}` : `${api}/salas`)
   }

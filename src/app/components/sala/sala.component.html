@@ -116,5 +116,5 @@
   </div>
 
   <!-- Notas durante la llamada (solo para quien inició sesión) -->
-  <app-nota-flotante *ngIf="esAdmin && fase === 'llamada'" posicion="bottom-24 right-4 sm:bottom-6 sm:right-6"></app-nota-flotante>
+  <app-nota-flotante *ngIf="esAdmin && fase === 'llamada'" [lateral]="true" posicion="bottom-24 right-4 sm:bottom-6 sm:right-6"></app-nota-flotante>
 </div>

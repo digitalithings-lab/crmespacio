@@ -1,7 +1,8 @@
 import { Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Cliente, ServiceclientesService } from 'src/app/services/serviceclientes.service';
-import { opcionesCliente, principalDe } from 'src/app/utils/tipos';
+import { Archivo, Cliente, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
+import { claseTipo, etiquetaTipo, opcionesCliente, principalDe } from 'src/app/utils/tipos';
+import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -12,6 +13,15 @@ import { ToastService } from 'src/app/services/toast.service';
 export class NotaFlotanteComponent implements OnInit, OnDestroy {
   // Clases de posición del botón (cambia según la pantalla donde se use)
   @Input() posicion = 'bottom-6 right-6'
+  // En la videollamada se abre como panel lateral (sin tapar el video) y no se cierra al guardar
+  @Input() lateral = false
+
+  public pestana: 'nota' | 'notas' | 'expediente' = 'nota'
+  public notas: Nota[] = []
+  public cargandoNotas = false
+  public archivos: Archivo[] = []
+  public personas: Cliente[] = []
+  public cargandoExpediente = false
 
   public abierto = false
   public guardando = false
@@ -29,7 +39,9 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subs.push(
       this.service.abrirNota$.subscribe(() => this.abrir()),
-      this.service.clienteContexto.subscribe(id => (this.contexto = id))
+      this.service.clienteContexto.subscribe(id => (this.contexto = id)),
+      // Cuando se guarda una nota (aquí o en otra parte), se actualiza la lista
+      this.service.notasActualizadas$.subscribe(() => { if (this.abierto) this.cargarNotas() })
     )
   }
 
@@ -41,8 +53,9 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
 
   abrir() {
     this.abierto = true
+    this.pestana = 'nota'
     // Si estás dentro de un expediente, ese cliente queda preseleccionado
-    if (this.contexto) this.idexpediente = this.contexto
+    if (this.contexto) { this.idexpediente = this.contexto; this.cargarDatos() }
     this.cargandoClientes = true
     this.service.listarClientes().subscribe({
       next: (resp) => {
@@ -50,10 +63,51 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
         this.cargandoClientes = false
         // Si estás en el expediente de una pareja, queda seleccionada la pareja
         if (this.contexto) this.idexpediente = principalDe(this.contexto, this.clientes)
+        this.cargarDatos()
       },
       error: () => { this.cargandoClientes = false }
     })
   }
+
+  // ---- Notas anteriores y expediente del cliente elegido ----
+  alCambiarCliente(id: string | null) {
+    this.idexpediente = id
+    this.cargarDatos()
+  }
+
+  private cargarDatos() {
+    this.cargarNotas()
+    const id = this.idexpediente
+    if (!id) { this.personas = []; this.archivos = []; return }
+    this.cargandoExpediente = true
+    this.service.obtenerCliente(id).subscribe({
+      next: (resp) => {
+        const c: Cliente = resp.data
+        this.personas = c?.integrantes?.length ? c.integrantes : c ? [c] : []
+        this.cargandoExpediente = false
+      },
+      error: () => { this.personas = []; this.cargandoExpediente = false }
+    })
+    this.service.listarArchivos(id).subscribe({
+      next: (resp) => { this.archivos = resp.data ?? [] },
+      error: () => { this.archivos = [] }
+    })
+  }
+
+  cargarNotas() {
+    const id = this.idexpediente
+    if (!id) { this.notas = []; return }
+    this.cargandoNotas = true
+    this.service.listarNotas(id).subscribe({
+      next: (resp) => { this.notas = resp.data ?? []; this.cargandoNotas = false },
+      error: () => { this.cargandoNotas = false }
+    })
+  }
+
+  claseTipo(t: string) { return claseTipo(t) }
+  etiquetaTipo(t: string) { return etiquetaTipo(t) }
+  icono(nombre: string) { return iconoArchivo(nombre) }
+  tamano(bytes: number | null) { return formatoTamano(bytes) }
 
   @HostListener('document:keydown.escape')
   cerrar() { if (!this.guardando) this.abierto = false }
@@ -70,7 +124,8 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
         if (resp.ok === true) {
           this.toast.success('Nota guardada')
           this.texto = ''
-          this.abierto = false
+          if (this.lateral) this.pestana = 'notas'  // sigues en la llamada: la nota aparece en la lista
+          else this.abierto = false
         }
       },
       error: (err) => {

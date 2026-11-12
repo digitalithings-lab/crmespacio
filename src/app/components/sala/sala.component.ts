@@ -55,7 +55,7 @@ export class SalaComponent implements OnInit, OnDestroy {
   // Audio claro: cancelación de eco, reducción de ruido y volumen automático
   private audioConstraints: MediaTrackConstraints = { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
 
-  // Sin servidor TURN: funciona en la mayoría de redes, pero no en las más restrictivas.
+  // Con STUN solo funciona en la mayoría de redes; el servidor TURN (lo pide el backend) cubre datos móviles y redes restrictivas.
   private rtcConfig: RTCConfiguration = {
     iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }]
   }
@@ -73,6 +73,12 @@ export class SalaComponent implements OnInit, OnDestroy {
     const n = localStorage.getItem('nombre')
     const a = localStorage.getItem('apellido')
     this.nombre = [n, a].filter(Boolean).join(' ')
+
+    // Se piden los servidores TURN mientras estás en la sala previa; si falla se queda con STUN
+    this.service.obtenerIce().subscribe({
+      next: (r) => { if (Array.isArray(r?.iceServers) && r.iceServers.length) this.rtcConfig = { iceServers: r.iceServers } },
+      error: () => { /* se queda con STUN */ }
+    })
 
     this.service.obtenerSala(this.codigo).subscribe({
       next: (resp) => {
