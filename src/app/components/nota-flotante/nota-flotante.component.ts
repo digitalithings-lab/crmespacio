@@ -1,6 +1,7 @@
 import { Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Cliente, ServiceclientesService } from 'src/app/services/serviceclientes.service';
+import { opcionesCliente, principalDe } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -36,13 +37,20 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
     this.subs.forEach(s => s.unsubscribe())
   }
 
+  get opciones() { return opcionesCliente(this.clientes) }
+
   abrir() {
     this.abierto = true
     // Si estás dentro de un expediente, ese cliente queda preseleccionado
     if (this.contexto) this.idexpediente = this.contexto
     this.cargandoClientes = true
     this.service.listarClientes().subscribe({
-      next: (resp) => { this.clientes = resp.data ?? []; this.cargandoClientes = false },
+      next: (resp) => {
+        this.clientes = resp.data ?? []
+        this.cargandoClientes = false
+        // Si estás en el expediente de una pareja, queda seleccionada la pareja
+        if (this.contexto) this.idexpediente = principalDe(this.contexto, this.clientes)
+      },
       error: () => { this.cargandoClientes = false }
     })
   }

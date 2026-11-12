@@ -35,7 +35,7 @@ export class NotasComponent implements OnInit, OnDestroy {
   get filtradas(): Nota[] {
     const q = this.busqueda.trim().toLowerCase()
     return !q ? this.notas : this.notas.filter(n =>
-      `${n.texto} ${n.cliente_nombre} ${n.cliente_apellido}`.toLowerCase().includes(q))
+      `${n.texto} ${n.cliente_grupo ?? ''} ${n.cliente_nombre} ${n.cliente_apellido}`.toLowerCase().includes(q))
   }
 
   nueva() { this.service.abrirNota() }

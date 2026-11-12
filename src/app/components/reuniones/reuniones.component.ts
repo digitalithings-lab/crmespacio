@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Cliente, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { ServicesalaService } from 'src/app/services/servicesala.service';
+import { opcionesCliente } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -33,6 +34,8 @@ export class ReunionesComponent implements OnInit {
     this.clientesService.listarClientes().subscribe({ next: (resp) => (this.clientes = resp.data ?? []) })
     this.cargarSalas()
   }
+
+  get opciones() { return opcionesCliente(this.clientes) }
 
   cargarSalas() {
     this.service.listarSalas().subscribe({

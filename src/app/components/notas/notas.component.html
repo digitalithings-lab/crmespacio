@@ -31,7 +31,7 @@
     <span class="text-xs font-medium text-zinc-400">{{ n.fecha_creacion | date: 'dd/MM/yyyy · HH:mm' }}</span>
     <p class="mt-3 line-clamp-6 flex-1 whitespace-pre-line text-sm leading-relaxed text-zinc-700">{{ n.texto }}</p>
     <a [routerLink]="['/clientes', n.idexpediente]" class="mt-5 flex items-center gap-2 border-t border-zinc-100 pt-4 text-xs font-medium text-zinc-500 transition hover:text-brand-700">
-      <i class="ph ph-user text-base"></i>{{ n.cliente_nombre }} {{ n.cliente_apellido }}
+      <i class="ph ph-user text-base"></i>{{ n.cliente_grupo || (n.cliente_nombre + ' ' + n.cliente_apellido) }}
       <i class="ph ph-arrow-right ml-auto"></i>
     </a>
   </article>

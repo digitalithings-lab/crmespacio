@@ -26,6 +26,8 @@ export interface Nota {
   fecha_creacion: string
   cliente_nombre?: string
   cliente_apellido?: string
+  // Nombre de la pareja («Mónica y Alejandro») cuando el cliente pertenece a un grupo
+  cliente_grupo?: string | null
 }
 
 export interface Archivo {
@@ -36,6 +38,8 @@ export interface Archivo {
   tamano: number | null
   cliente_nombre?: string
   cliente_apellido?: string
+  // Nombre de la pareja («Mónica y Alejandro») cuando el cliente pertenece a un grupo
+  cliente_grupo?: string | null
 }
 
 @Injectable({

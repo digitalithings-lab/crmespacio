@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Archivo, Cliente, ServiceclientesService } from 'src/app/services/serviceclientes.service';
+import { opcionesCliente } from 'src/app/utils/tipos';
 import { categoriaArchivo, formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -34,6 +35,8 @@ export class BibliotecaComponent implements OnInit {
       error: () => { this.cargando = false; this.toast.error('No se pudieron cargar los archivos') }
     })
   }
+
+  get opciones() { return opcionesCliente(this.clientes) }
 
   get filtrados(): Archivo[] {
     return this.filtro === 'Todos' ? this.archivos : this.archivos.filter(a => categoriaArchivo(a.documento) === this.filtro)
