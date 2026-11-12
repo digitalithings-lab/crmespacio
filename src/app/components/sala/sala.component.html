@@ -36,6 +36,7 @@
             [ngClass]="camActivo ? 'bg-white/15 hover:bg-white/25' : 'bg-rose-600 hover:bg-rose-500'"><i class="ph text-xl" [ngClass]="camActivo ? 'ph-video-camera' : 'ph-video-camera-slash'"></i></button>
         </div>
       </div>
+      <p class="mt-3 flex items-start gap-2 text-xs text-zinc-400"><i class="ph ph-headphones text-base"></i> Si hay otro dispositivo en la llamada cerca de ti, usa audífonos para evitar el eco.</p>
       <p *ngIf="avisoPermisos" class="mt-3 flex items-start gap-2 text-sm text-amber-300"><i class="ph ph-warning text-lg"></i> {{ avisoPermisos }}</p>
     </div>
 
@@ -78,11 +79,13 @@
 
         <!-- Los demás -->
         <div *ngFor="let p of participantes" class="animate-scale-in relative overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10">
-          <video [srcObject]="p.stream" autoplay playsinline class="h-full w-full object-cover"></video>
-          <div *ngIf="!p.conectado" class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-900">
+          <video [srcObject]="p.stream" autoplay playsinline (playing)="p.tieneVideo = true" class="h-full w-full object-cover"></video>
+          <!-- Solo se tapa el video si no llegan imágenes (su cámara está apagada o aún no empieza) -->
+          <div *ngIf="!p.tieneVideo" class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-900">
             <span class="flex h-20 w-20 items-center justify-center rounded-full bg-zinc-700 text-2xl font-extrabold">{{ iniciales(p.nombre) }}</span>
-            <span class="flex items-center gap-2 text-xs text-zinc-400"><i class="ph ph-spinner animate-spin"></i> Conectando…</span>
+            <span *ngIf="!p.conectado" class="flex items-center gap-2 text-xs text-zinc-400"><i class="ph ph-spinner animate-spin"></i> Conectando…</span>
           </div>
+          <span *ngIf="p.reconectando" class="absolute left-3 top-3 flex items-center gap-1.5 rounded-lg bg-amber-400 px-2.5 py-1 text-xs font-semibold text-zinc-900"><i class="ph ph-spinner animate-spin"></i> Reconectando…</span>
           <span class="absolute bottom-3 left-3 rounded-lg bg-black/60 px-2.5 py-1 text-xs font-semibold backdrop-blur">{{ p.nombre }}</span>
         </div>
       </div>

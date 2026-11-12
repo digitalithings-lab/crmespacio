@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ServiceclientesService } from 'src/app/services/serviceclientes.service';
@@ -11,6 +11,10 @@ interface Participante {
   stream: MediaStream
   pc: RTCPeerConnection
   conectado: boolean
+  iniciador: boolean      // quien llamó primero es quien reintenta si la conexión se cae
+  reconectando: boolean   // la conexión se cayó un momento: se muestra un aviso sin tapar el video
+  tieneVideo: boolean     // llegan imágenes de su cámara (si no, se muestra su inicial)
+  reintentando: boolean
 }
 
 type Fase = 'cargando' | 'noexiste' | 'lobby' | 'llamada' | 'fin'
@@ -48,6 +52,9 @@ export class SalaComponent implements OnInit, OnDestroy {
   private pantalla: MediaStream | null = null
   private pendientes = new Map<string, RTCIceCandidateInit[]>()
 
+  // Audio claro: cancelación de eco, reducción de ruido y volumen automático
+  private audioConstraints: MediaTrackConstraints = { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+
   // Sin servidor TURN: funciona en la mayoría de redes, pero no en las más restrictivas.
   private rtcConfig: RTCConfiguration = {
     iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }]
@@ -57,7 +64,8 @@ export class SalaComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private service: ServicesalaService,
     private clientes: ServiceclientesService,
-    private toast: ToastService
+    private toast: ToastService,
+    private zone: NgZone
   ) { }
 
   ngOnInit(): void {
@@ -96,8 +104,8 @@ export class SalaComponent implements OnInit, OnDestroy {
   // ================= Cámara y micrófono =================
   private async iniciarVistaPrevia() {
     const intentos: MediaStreamConstraints[] = [
-      { video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: true },
-      { video: false, audio: true },
+      { video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24, max: 30 }, facingMode: 'user' }, audio: this.audioConstraints },
+      { video: false, audio: this.audioConstraints },
       { video: true, audio: false }
     ]
     for (const c of intentos) {
@@ -283,7 +291,7 @@ export class SalaComponent implements OnInit, OnDestroy {
   private crearPeer(id: string, nombre: string | undefined, iniciador: boolean): Participante {
     const pc = new RTCPeerConnection(this.rtcConfig)
     const stream = new MediaStream()
-    const p: Participante = { id, nombre: nombre || 'Invitado', stream, pc, conectado: false }
+    const p: Participante = { id, nombre: nombre || 'Invitado', stream, pc, conectado: false, iniciador, reconectando: false, tieneVideo: false, reintentando: false }
     this.participantes = [...this.participantes, p]
 
     // IMPORTANTE: se usa addTrack (no addTransceiver). Así, cuando llega una oferta,
@@ -300,21 +308,58 @@ export class SalaComponent implements OnInit, OnDestroy {
       if (!video) pc.addTransceiver('video', { direction: 'sendrecv' })
     }
 
-    pc.ontrack = (e) => {
+    // Los eventos de la conexión no pasan por la zona de Angular: se envuelven para que la pantalla se actualice.
+    pc.addEventListener('track', (e) => this.zone.run(() => {
       if (!stream.getTracks().includes(e.track)) stream.addTrack(e.track)
-    }
-    pc.onicecandidate = (e) => {
+      if (e.track.kind === 'video') {
+        p.tieneVideo = !e.track.muted
+        e.track.addEventListener('unmute', () => this.zone.run(() => (p.tieneVideo = true)))
+        e.track.addEventListener('mute', () => this.zone.run(() => (p.tieneVideo = false)))
+      }
+    }))
+    pc.addEventListener('icecandidate', (e) => {
       if (e.candidate) this.enviar('ice', id, e.candidate.toJSON())
-    }
-    pc.onconnectionstatechange = () => {
+    })
+    pc.addEventListener('connectionstatechange', () => this.zone.run(() => {
       const estado = pc.connectionState
       p.conectado = estado === 'connected'
-      if (estado === 'failed' || estado === 'closed') this.quitar(id)
-      if (estado === 'disconnected') {
-        setTimeout(() => { if (pc.connectionState === 'disconnected') this.quitar(id) }, 8000)
+      p.reconectando = estado === 'disconnected' || estado === 'failed'
+
+      if (estado === 'connected') this.limitarVideo(pc)
+      if (estado === 'closed') { this.quitar(id); return }
+
+      // En celulares la conexión se cae y vuelve: se intenta recuperar antes de sacar a la persona.
+      if (p.reconectando) {
+        setTimeout(() => { if (this.buscar(id) && pc.connectionState !== 'connected') this.reintentarConexion(p) }, estado === 'failed' ? 500 : 4000)
+        setTimeout(() => { if (this.buscar(id) && pc.connectionState !== 'connected') this.quitar(id) }, 25000)
       }
-    }
+    }))
     return p
+  }
+
+  /** Reinicia la búsqueda de ruta (ICE) y vuelve a ofrecer. Solo lo hace quien llamó primero, para no chocar. */
+  private async reintentarConexion(p: Participante) {
+    if (!p.iniciador || p.reintentando) return
+    p.reintentando = true
+    try {
+      const oferta = await p.pc.createOffer({ iceRestart: true })
+      await p.pc.setLocalDescription(oferta)
+      await this.enviar('offer', p.id, { sdp: p.pc.localDescription, nombre: this.nombre.trim() })
+    } catch { /* se intentará de nuevo si sigue caída */ }
+    setTimeout(() => (p.reintentando = false), 6000)
+  }
+
+  /** Limita el video (~800 kbps) para que el audio no se corte cuando la red es floja. */
+  private async limitarVideo(pc: RTCPeerConnection) {
+    for (const sender of pc.getSenders()) {
+      if (sender.track?.kind !== 'video') continue
+      try {
+        const parametros = sender.getParameters()
+        if (!parametros.encodings?.length) parametros.encodings = [{}]
+        parametros.encodings[0].maxBitrate = 800_000
+        await sender.setParameters(parametros)
+      } catch { /* el navegador no lo permite: se deja como está */ }
+    }
   }
 
   private quitar(id: string) {
