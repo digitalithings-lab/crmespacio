@@ -14,6 +14,9 @@ export interface Cliente {
   telefono: string
   edad: number
   tipo: string
+  // Pareja: las dos personas comparten idgrupo; integrantes trae a ambas (la primera es la principal)
+  idgrupo?: string | null
+  integrantes?: Cliente[]
 }
 
 export interface Nota {

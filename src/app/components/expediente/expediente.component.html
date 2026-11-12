@@ -18,11 +18,13 @@
 <ng-container *ngIf="cliente">
   <!-- Encabezado del cliente -->
   <div class="animate-fade-up mt-6 flex flex-wrap items-center gap-5 rounded-2xl border border-zinc-200 bg-white p-6">
-    <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-brand-700 text-xl font-extrabold text-white">{{ iniciales() }}</div>
+    <div class="flex shrink-0 -space-x-4">
+      <div *ngFor="let p of personas" class="flex h-16 w-16 items-center justify-center rounded-full bg-brand-700 text-xl font-extrabold text-white ring-4 ring-white">{{ iniciales(p) }}</div>
+    </div>
     <div class="min-w-0 flex-1">
-      <h1 class="truncate text-2xl font-extrabold tracking-tight">{{ cliente.nombre }} {{ cliente.apellido }}</h1>
+      <h1 class="truncate text-2xl font-extrabold tracking-tight">{{ nombreGrupo() }}</h1>
       <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(cliente.tipo)">{{ cliente.tipo }}</span>
+        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(cliente.tipo)">{{ etiquetaTipo(cliente.tipo) }}</span>
         <span>Expediente <strong class="font-semibold text-zinc-700">#{{ cliente.idexpediente | slice:0:8 }}</strong></span>
       </div>
     </div>
@@ -64,27 +66,33 @@
 
   <!-- ===== Expediente ===== -->
   <section *ngIf="tab === 'expediente'" role="tabpanel" class="animate-fade-up mt-6">
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div *ngFor="let p of personas; let i = index" [class.mt-8]="i > 0">
+      <h3 *ngIf="personas.length > 1" class="mb-3 flex items-center gap-2 text-sm font-bold text-zinc-700">
+        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">{{ iniciales(p) }}</span>
+        Persona {{ i + 1 }} · {{ p.nombre }} {{ p.apellido }}
+      </h3>
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div class="rounded-2xl border border-zinc-200 bg-white p-5">
         <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400"><i class="ph ph-envelope-simple text-base"></i> Correo</p>
-        <p class="mt-2 break-all font-semibold">{{ cliente.correo }}</p>
+        <p class="mt-2 break-all font-semibold">{{ p.correo }}</p>
       </div>
       <div class="rounded-2xl border border-zinc-200 bg-white p-5">
         <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400"><i class="ph ph-phone text-base"></i> Teléfono</p>
-        <p class="mt-2 font-semibold">{{ cliente.telefono }}</p>
+        <p class="mt-2 font-semibold">{{ p.telefono }}</p>
       </div>
       <div class="rounded-2xl border border-zinc-200 bg-white p-5">
         <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400"><i class="ph ph-identification-badge text-base"></i> Cédula</p>
-        <p class="mt-2 font-semibold">{{ cliente.cedula }}</p>
+        <p class="mt-2 font-semibold">{{ p.cedula }}</p>
       </div>
       <div class="rounded-2xl border border-zinc-200 bg-white p-5">
         <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400"><i class="ph ph-cake text-base"></i> Edad</p>
-        <p class="mt-2 font-semibold">{{ cliente.edad }} años</p>
+        <p class="mt-2 font-semibold">{{ p.edad }} años</p>
       </div>
       <div class="rounded-2xl border border-zinc-200 bg-white p-5">
         <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400"><i class="ph ph-users-three text-base"></i> Tipo</p>
-        <p class="mt-2 font-semibold">{{ cliente.tipo }}</p>
+        <p class="mt-2 font-semibold">{{ etiquetaTipo(p.tipo) }}</p>
       </div>
+    </div>
     </div>
 
     <div class="mt-4 grid gap-4 sm:grid-cols-2">

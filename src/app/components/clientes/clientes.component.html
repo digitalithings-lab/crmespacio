@@ -17,7 +17,7 @@
     </div>
     <select [(ngModel)]="filtroTipo" aria-label="Filtrar por tipo" class="rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm text-zinc-600 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
       <option value="">Todos los tipos</option>
-      <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
+      <option *ngFor="let t of tipos" [value]="t.valor">{{ t.etiqueta }}</option>
     </select>
   </div>
 
@@ -78,22 +78,24 @@
       </ng-container>
 
       <ng-container *ngIf="!cargando">
-        <tr *ngFor="let c of filtrados; let i = index" (click)="ver(c)"
+        <tr *ngFor="let f of filtrados; let i = index" (click)="ver(f)"
             class="group animate-fade-in cursor-pointer transition hover:bg-zinc-50"
             [style.animation-delay.ms]="i * 35">
           <td class="px-6 py-4">
             <div class="flex items-center gap-3">
-              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700 transition group-hover:scale-110">{{ iniciales(c) }}</div>
+              <div class="flex shrink-0 -space-x-3">
+                <div *ngFor="let c of f.integrantes" class="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700 ring-2 ring-white transition group-hover:scale-110">{{ iniciales(c) }}</div>
+              </div>
               <div class="min-w-0">
-                <a [routerLink]="['/clientes', c.idexpediente]" (click)="$event.stopPropagation()" class="font-semibold hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">{{ c.nombre }} {{ c.apellido }}</a>
-                <p class="truncate text-xs text-zinc-500">{{ c.correo }}</p>
+                <a [routerLink]="['/clientes', f.principal.idexpediente]" (click)="$event.stopPropagation()" class="font-semibold hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">{{ nombreFila(f) }}</a>
+                <p class="truncate text-xs text-zinc-500">{{ f.principal.correo }}<span *ngIf="f.integrantes.length > 1"> · +{{ f.integrantes.length - 1 }} pareja</span></p>
               </div>
             </div>
           </td>
-          <td class="hidden px-6 py-4 text-zinc-600 md:table-cell">{{ c.cedula }}</td>
-          <td class="hidden px-6 py-4 text-zinc-600 lg:table-cell">{{ c.telefono }}</td>
-          <td class="hidden px-6 py-4 text-zinc-600 sm:table-cell">{{ c.edad }}</td>
-          <td class="px-6 py-4"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(c.tipo)">{{ c.tipo }}</span></td>
+          <td class="hidden px-6 py-4 text-zinc-600 md:table-cell">{{ f.principal.cedula }}</td>
+          <td class="hidden px-6 py-4 text-zinc-600 lg:table-cell">{{ f.principal.telefono }}</td>
+          <td class="hidden px-6 py-4 text-zinc-600 sm:table-cell">{{ f.principal.edad }}</td>
+          <td class="px-6 py-4"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(f.principal.tipo)">{{ etiquetaTipo(f.principal.tipo) }}</span></td>
           <td class="px-6 py-4 text-right"><i class="ph ph-caret-right text-lg text-zinc-300 transition group-hover:translate-x-1 group-hover:text-brand-700"></i></td>
         </tr>
       </ng-container>
@@ -103,13 +105,13 @@
     <!-- Estado vacío -->
     <div *ngIf="!cargando && filtrados.length === 0" class="animate-fade-up flex flex-col items-center px-6 py-14 text-center">
       <span class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700"><i class="ph ph-users text-2xl"></i></span>
-      <p class="mt-4 font-semibold">{{ clientes.length === 0 ? 'Aún no tienes clientes' : 'Sin resultados' }}</p>
-      <p class="mt-1 text-sm text-zinc-500">{{ clientes.length === 0 ? 'Crea el primero para abrir su expediente.' : 'Prueba con otra búsqueda o filtro.' }}</p>
+      <p class="mt-4 font-semibold">{{ filas.length === 0 ? 'Aún no tienes clientes' : 'Sin resultados' }}</p>
+      <p class="mt-1 text-sm text-zinc-500">{{ filas.length === 0 ? 'Crea el primero para abrir su expediente.' : 'Prueba con otra búsqueda o filtro.' }}</p>
     </div>
   </div>
 
-  <div *ngIf="!cargando && clientes.length > 0" class="border-t border-zinc-200 px-6 py-4 text-sm text-zinc-500">
-    Mostrando {{ filtrados.length }} de {{ clientes.length }} clientes
+  <div *ngIf="!cargando && filas.length > 0" class="border-t border-zinc-200 px-6 py-4 text-sm text-zinc-500">
+    Mostrando {{ filtrados.length }} de {{ filas.length }} clientes
   </div>
 </div>
 
@@ -135,10 +137,24 @@
       <div class="sm:col-span-2">
         <span id="tipo-label" class="mb-2 block text-sm font-semibold">Tipo</span>
         <div role="radiogroup" aria-labelledby="tipo-label" class="grid grid-cols-3 gap-3">
-          <label class="cursor-pointer"><input type="radio" name="tipo" value="Pareja" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-heart text-2xl"></i>Pareja</span></label>
-          <label class="cursor-pointer"><input type="radio" name="tipo" value="Individual" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-user text-2xl"></i>Individual</span></label>
-          <label class="cursor-pointer"><input type="radio" name="tipo" value="Niños/Adolescentes" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-baby text-2xl"></i>Niños/Adolescentes</span></label>
+          <label class="cursor-pointer"><input type="radio" name="tipo" value="pareja" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-heart text-2xl"></i>Pareja</span></label>
+          <label class="cursor-pointer"><input type="radio" name="tipo" value="individual" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-user text-2xl"></i>Individual</span></label>
+          <label class="cursor-pointer"><input type="radio" name="tipo" value="niños/adolescentes" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-baby text-2xl"></i>Niños/Adolescentes</span></label>
         </div>
+      </div>
+    </div>
+
+    <!-- Datos de la pareja: aparecen solo cuando el tipo es pareja -->
+    <div *ngIf="tipo === 'pareja'" class="animate-fade-up mt-6 rounded-2xl border border-brand-100 bg-brand-50/40 p-5">
+      <p class="flex items-center gap-2 text-sm font-bold text-brand-800"><i class="ph ph-heart text-lg"></i> Datos de la pareja</p>
+      <p class="mt-1 text-xs text-zinc-500">Quedan registrados como dos clientes del mismo grupo de pareja.</p>
+      <div class="mt-4 grid gap-4 sm:grid-cols-2">
+        <div><label for="p-nombre" class="mb-2 block text-sm font-semibold">Nombre</label><input id="p-nombre" name="p-nombre" type="text" [(ngModel)]="pNombre" required placeholder="Nombre" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div><label for="p-apellido" class="mb-2 block text-sm font-semibold">Apellido</label><input id="p-apellido" name="p-apellido" type="text" [(ngModel)]="pApellido" required placeholder="Apellido" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class="sm:col-span-2"><label for="p-correo" class="mb-2 block text-sm font-semibold">Correo</label><input id="p-correo" name="p-correo" type="email" [(ngModel)]="pCorreo" required placeholder="correo@ejemplo.com" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div><label for="p-cedula" class="mb-2 block text-sm font-semibold">Cédula</label><input id="p-cedula" name="p-cedula" type="text" [(ngModel)]="pCedula" required placeholder="Número de cédula" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div><label for="p-telefono" class="mb-2 block text-sm font-semibold">Teléfono</label><input id="p-telefono" name="p-telefono" type="tel" [(ngModel)]="pTelefono" required placeholder="Número de teléfono" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div><label for="p-edad" class="mb-2 block text-sm font-semibold">Edad</label><input id="p-edad" name="p-edad" type="number" [(ngModel)]="pEdad" required placeholder="Edad" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
       </div>
     </div>
 

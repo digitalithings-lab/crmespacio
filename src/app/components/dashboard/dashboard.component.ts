@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { iconoArchivo } from 'src/app/utils/archivos';
+import { nombreGrupo, TIPOS } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -22,7 +23,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public notasRecientes: any[] = []
   public archivosRecientes: any[] = []
 
-  public tipos = ['Pareja', 'Individual', 'Niños/Adolescentes']
+  public tipos = TIPOS
   private sub?: Subscription
 
   constructor(private service: ServiceclientesService, private toast: ToastService) { }
@@ -64,6 +65,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   porcentaje(tipo: string) {
     return this.totales.clientes ? Math.round((this.cantidad(tipo) / this.totales.clientes) * 100) : 0
   }
+
+  nombreFila(c: any) { return nombreGrupo(c.integrantes?.length ? c.integrantes : [c]) }
 
   iniciales(c: any) {
     return `${c.nombre?.[0] ?? ''}${c.apellido?.[0] ?? ''}`.toUpperCase()

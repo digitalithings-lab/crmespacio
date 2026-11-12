@@ -66,7 +66,7 @@
         <li *ngFor="let c of clientesRecientes; let i = index" class="animate-fade-up" [style.animation-delay.ms]="i * 50">
           <a [routerLink]="['/clientes', c.idexpediente]" class="group flex items-center gap-3 rounded-lg py-3 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
             <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">{{ iniciales(c) }}</div>
-            <div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">{{ c.nombre }} {{ c.apellido }}</p><p class="truncate text-xs text-zinc-500">{{ c.correo }}</p></div>
+            <div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">{{ nombreFila(c) }}</p><p class="truncate text-xs text-zinc-500">{{ c.correo }}</p></div>
             <span class="shrink-0 text-xs text-zinc-400">#{{ c.idexpediente | slice:0:8 }}</span>
             <i class="ph ph-caret-right text-zinc-300 transition group-hover:translate-x-0.5 group-hover:text-brand-700"></i>
           </a>
@@ -79,9 +79,9 @@
       <h2 class="font-bold">Clientes por tipo</h2>
       <div class="mt-4 space-y-4">
         <div *ngFor="let t of tipos">
-          <div class="mb-1.5 flex items-center justify-between text-sm"><span class="font-medium text-zinc-700">{{ t }}</span><span class="text-zinc-500">{{ cargando ? '–' : cantidad(t) }}</span></div>
+          <div class="mb-1.5 flex items-center justify-between text-sm"><span class="font-medium text-zinc-700">{{ t.etiqueta }}</span><span class="text-zinc-500">{{ cargando ? '–' : cantidad(t.valor) }}</span></div>
           <div class="h-2 overflow-hidden rounded-full bg-zinc-100">
-            <div class="h-full rounded-full bg-brand-600 transition-all duration-700 ease-out" [style.width.%]="cargando ? 0 : porcentaje(t)"></div>
+            <div class="h-full rounded-full bg-brand-600 transition-all duration-700 ease-out" [style.width.%]="cargando ? 0 : porcentaje(t.valor)"></div>
           </div>
         </div>
       </div>

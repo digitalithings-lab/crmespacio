@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { Archivo, Cliente, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ServicesalaService } from 'src/app/services/servicesala.service';
+import { claseTipo, etiquetaTipo, nombreGrupo } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
 type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones'
@@ -155,16 +156,21 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   }
 
   // ---- Presentación ----
-  iniciales() {
-    const c = this.cliente
+  claseTipo(tipo: string) { return claseTipo(tipo) }
+  etiquetaTipo(tipo: string) { return etiquetaTipo(tipo) }
+
+  iniciales(c: Cliente | null = this.cliente) {
     return c ? `${c.nombre?.[0] ?? ''}${c.apellido?.[0] ?? ''}`.toUpperCase() : ''
   }
 
-  claseTipo(tipo: string) {
-    if (tipo === 'Pareja') return 'bg-brand-50 text-brand-700'
-    if (tipo === 'Niños/Adolescentes') return 'bg-amber-50 text-amber-800'
-    return 'bg-zinc-100 text-zinc-700'
+  // Las personas del expediente: una, o las dos de la pareja
+  get personas(): Cliente[] {
+    const c = this.cliente
+    return c ? (c.integrantes?.length ? c.integrantes : [c]) : []
   }
+
+  nombreGrupo() { return nombreGrupo(this.personas) }
+
 
   icono(nombre: string) { return iconoArchivo(nombre) }
   tamano(bytes: number | null) { return formatoTamano(bytes) }

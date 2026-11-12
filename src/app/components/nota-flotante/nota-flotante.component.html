@@ -10,7 +10,7 @@
 <div *ngIf="abierto" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="nota-title">
   <div (click)="cerrar()" class="animate-fade-in absolute inset-0 bg-zinc-900/40 backdrop-blur-sm"></div>
 
-  <form #f="ngForm" (ngSubmit)="guardar()" class="animate-slide-up sm:animate-scale-in relative flex max-h-[92dvh] w-full max-w-2xl flex-col rounded-t-3xl bg-white shadow-xl sm:rounded-2xl">
+  <form #f="ngForm" (ngSubmit)="guardar()" class="animate-slide-up sm:animate-scale-in relative flex max-h-[92dvh] w-full max-w-2xl flex-col rounded-t-3xl bg-white text-zinc-900 shadow-xl sm:rounded-2xl">
     <div class="flex items-center justify-between gap-4 border-b border-zinc-100 px-6 py-4 sm:px-8">
       <h2 id="nota-title" class="text-xl font-extrabold tracking-tight">Nueva nota</h2>
       <button type="button" (click)="cerrar()" aria-label="Cerrar" class="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700"><i class="ph ph-x text-lg"></i></button>
@@ -30,7 +30,7 @@
       <div>
         <label for="n-texto" class="mb-2 block text-sm font-semibold">Nota</label>
         <textarea id="n-texto" name="texto" [(ngModel)]="texto" required rows="9" placeholder="Escribe aquí tu nota…"
-          class="w-full resize-none rounded-xl border border-zinc-300 px-4 py-3 text-sm leading-relaxed placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10"></textarea>
+          class="w-full resize-none rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm leading-relaxed text-zinc-900 placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10"></textarea>
       </div>
     </div>
 
