@@ -112,7 +112,7 @@ export class SalaComponent implements OnInit, OnDestroy {
       try {
         const stream = await navigator.mediaDevices.getUserMedia(c)
         this.local = stream
-        this.vistaLocal = stream
+        this.vistaLocal = this.soloVideo(stream)
         break
       } catch { /* prueba la siguiente combinación */ }
     }
@@ -125,6 +125,11 @@ export class SalaComponent implements OnInit, OnDestroy {
     } else if (!this.tieneVideo || !this.tieneAudio) {
       this.avisoPermisos = !this.tieneVideo ? 'Sin cámara: entrarás solo con audio.' : 'Sin micrófono: te verán pero no te oirán.'
     }
+  }
+
+  // Copia del flujo con SOLO el video: así el recuadro propio nunca reproduce tu micrófono.
+  private soloVideo(stream: MediaStream): MediaStream {
+    return new MediaStream(stream.getVideoTracks())
   }
 
   alternarMic() {
@@ -156,7 +161,7 @@ export class SalaComponent implements OnInit, OnDestroy {
     this.pantalla?.getTracks().forEach(t => t.stop())
     this.pantalla = null
     this.compartiendo = false
-    this.vistaLocal = this.local
+    this.vistaLocal = this.local ? this.soloVideo(this.local) : null
     await this.reemplazarVideo(this.local?.getVideoTracks()[0] ?? null)
   }
 

@@ -23,7 +23,7 @@
   <div *ngIf="fase === 'lobby'" class="mx-auto flex min-h-[100dvh] max-w-5xl flex-col justify-center gap-8 px-4 py-10 lg:flex-row lg:items-center">
     <div class="animate-fade-up w-full lg:w-3/5">
       <div class="relative aspect-video overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10">
-        <video *ngIf="tieneVideo && camActivo" [srcObject]="vistaLocal" autoplay playsinline muted class="h-full w-full -scale-x-100 object-cover"></video>
+        <video *ngIf="tieneVideo && camActivo" [srcObject]="vistaLocal" autoplay playsinline [muted]="true" class="h-full w-full -scale-x-100 object-cover"></video>
         <div *ngIf="!tieneVideo || !camActivo" class="flex h-full w-full items-center justify-center">
           <span class="flex h-20 w-20 items-center justify-center rounded-full bg-brand-700 text-2xl font-extrabold">{{ iniciales(nombre) || '?' }}</span>
         </div>
@@ -69,7 +69,7 @@
       <div class="grid h-full auto-rows-fr gap-3" [ngClass]="gridClase()">
         <!-- Yo -->
         <div class="animate-scale-in relative overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10">
-          <video *ngIf="vistaLocal && (compartiendo || (tieneVideo && camActivo))" [srcObject]="vistaLocal" autoplay playsinline muted class="h-full w-full object-cover" [ngClass]="compartiendo ? 'object-contain' : '-scale-x-100'"></video>
+          <video *ngIf="vistaLocal && (compartiendo || (tieneVideo && camActivo))" [srcObject]="vistaLocal" autoplay playsinline [muted]="true" class="h-full w-full object-cover" [ngClass]="compartiendo ? 'object-contain' : '-scale-x-100'"></video>
           <div *ngIf="!(vistaLocal && (compartiendo || (tieneVideo && camActivo)))" class="flex h-full w-full items-center justify-center">
             <span class="flex h-20 w-20 items-center justify-center rounded-full bg-brand-700 text-2xl font-extrabold">{{ iniciales(nombre) }}</span>
           </div>
