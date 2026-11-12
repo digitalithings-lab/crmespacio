@@ -112,10 +112,19 @@
             <div><dt class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Edad</dt><dd class="font-medium">{{ p.edad != null ? p.edad + ' años' : '—' }}</dd></div>
           </dl>
         </div>
+        <div *ngIf="faltanEnCrm(c)" class="mb-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p class="text-sm font-semibold text-amber-900">{{ c.partner ? 'Hay personas de esta cita sin registrar' : 'Este cliente aún no está registrado' }}</p>
+          <p *ngIf="datosFaltantes(c).length" class="mt-1 text-xs text-amber-800">Faltan datos en la cita: {{ datosFaltantes(c).join('; ') }}.</p>
+          <button type="button" (click)="registrar(c)" [disabled]="registrando || datosFaltantes(c).length > 0"
+            class="mt-3 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+            <ng-container *ngIf="!registrando"><i class="ph ph-user-plus text-base"></i> Registrar en el CRM</ng-container>
+            <ng-container *ngIf="registrando"><i class="ph ph-spinner animate-spin text-lg"></i> Registrando…</ng-container>
+          </button>
+        </div>
         <a *ngIf="expediente(c) as exp" [routerLink]="['/clientes', exp]" class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800">
           Abrir expediente completo <i class="ph ph-arrow-right"></i>
         </a>
-        <p *ngIf="!expediente(c)" class="text-xs text-zinc-500">Se registra en el CRM al confirmar la cita en Florece.</p>
+        
       </section>
 
       <!-- Billetera -->

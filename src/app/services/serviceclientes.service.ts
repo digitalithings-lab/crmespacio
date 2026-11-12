@@ -80,11 +80,12 @@ export interface CitaAgenda {
   meetingUrl: string | null
   note: string | null
   clientType: string
+  crmGroupId?: string | null
   priceCents: number
   currency: string
   paid: boolean
   patient: { fullName: string | null; idNumber: string | null; age: number | null; email: string | null; phone: string | null }
-  partner: { fullName: string | null; idNumber: string | null; email: string | null; phone: string | null } | null
+  partner: { fullName: string | null; idNumber: string | null; age?: number | null; email: string | null; phone: string | null } | null
   clientes: Cliente[]
   cobro: Cobro | null
 }
