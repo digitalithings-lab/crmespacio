@@ -109,7 +109,7 @@
             <ng-container *ngIf="registrando"><i class="ph ph-spinner animate-spin text-lg"></i> Registrando…</ng-container>
           </button>
         </div>
-        <div *ngFor="let p of personas(c)" class="mb-3 rounded-2xl border border-zinc-200 bg-white p-4">
+        <div *ngFor="let p of personas(c); trackBy: porRol" class="mb-3 rounded-2xl border border-zinc-200 bg-white p-4">
           <div class="flex items-center justify-between gap-2">
             <p class="font-semibold">{{ p.nombre || 'Sin nombre' }}</p>
             <span class="text-xs font-semibold" [ngClass]="p.enCrm ? 'text-emerald-700' : 'text-amber-700'">{{ p.enCrm ? 'En el CRM' : 'Aún no está en el CRM' }}</span>

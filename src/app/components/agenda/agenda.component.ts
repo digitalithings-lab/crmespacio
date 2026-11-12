@@ -137,7 +137,18 @@ export class AgendaComponent implements OnInit {
   @HostListener('document:keydown.escape')
   cerrar() { this.abierta = null }
 
+  // Se calcula una vez por cita (la cita se reemplaza al recargar la agenda): así la lista es estable entre ciclos
+  private cachePersonas = new WeakMap<CitaAgenda, any[]>()
+
   personas(c: CitaAgenda) {
+    const guardada = this.cachePersonas.get(c)
+    if (guardada) return guardada
+    const resultado = this.calcularPersonas(c)
+    this.cachePersonas.set(c, resultado)
+    return resultado
+  }
+
+  private calcularPersonas(c: CitaAgenda) {
     const lista = [
       { rol: 1, etiqueta: c.partner ? 'Persona 1' : 'Cliente', f: c.patient as any, crm: c.cliente1 },
       ...(c.partner ? [{ rol: 2, etiqueta: 'Pareja', f: c.partner as any, crm: c.cliente2 }] : []),
@@ -153,6 +164,9 @@ export class AgendaComponent implements OnInit {
       return { rol: p.rol, etiqueta: p.etiqueta, crm, nombre, cedula, correo, telefono, edad, faltan, enCrm: !!crm }
     })
   }
+
+  // personas() devuelve objetos nuevos en cada ciclo; sin esto Angular recrearía el formulario mientras se escribe
+  porRol = (_: number, p: { rol: number }) => p.rol
 
   // ¿Alguna persona de la cita tiene datos por completar?
   incompleta(c: CitaAgenda): boolean { return this.personas(c).some(p => p.faltan.length > 0) }
