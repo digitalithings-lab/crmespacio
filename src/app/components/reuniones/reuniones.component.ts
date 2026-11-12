@@ -11,7 +11,7 @@ import { ToastService } from 'src/app/services/toast.service';
 })
 export class ReunionesComponent implements OnInit {
   public clientes: Cliente[] = []
-  public idexpediente: number | null = null
+  public idexpediente: string | null = null
   public nombre = ''
   public creando = false
   public codigo = ''

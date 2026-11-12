@@ -16,7 +16,7 @@
       <select id="r-cliente" [(ngModel)]="idexpediente" name="idexpediente"
         class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-700 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
         <option [ngValue]="null" disabled>Selecciona el cliente de la reunión</option>
-        <option *ngFor="let c of clientes" [ngValue]="c.idexpediente">{{ c.nombre }} {{ c.apellido }} · #{{ c.idexpediente }}</option>
+        <option *ngFor="let c of clientes" [ngValue]="c.idexpediente">{{ c.nombre }} {{ c.apellido }} · #{{ c.idexpediente | slice:0:8 }}</option>
       </select>
 
       <label for="r-nombre" class="mt-5 mb-2 block text-sm font-semibold">Nombre de la reunión <span class="font-normal text-zinc-400">(opcional)</span></label>

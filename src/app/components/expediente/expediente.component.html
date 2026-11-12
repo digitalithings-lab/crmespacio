@@ -23,7 +23,7 @@
       <h1 class="truncate text-2xl font-extrabold tracking-tight">{{ cliente.nombre }} {{ cliente.apellido }}</h1>
       <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
         <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(cliente.tipo)">{{ cliente.tipo }}</span>
-        <span>Expediente <strong class="font-semibold text-zinc-700">#{{ cliente.idexpediente }}</strong></span>
+        <span>Expediente <strong class="font-semibold text-zinc-700">#{{ cliente.idexpediente | slice:0:8 }}</strong></span>
       </div>
     </div>
     <button type="button" (click)="nuevaNota()" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
@@ -130,7 +130,7 @@
         <i class="ph text-2xl" [ngClass]="subiendo ? 'ph-spinner animate-spin' : 'ph-cloud-arrow-up'"></i>
       </span>
       <span class="mt-4 text-sm font-semibold">{{ subiendo ? 'Subiendo archivos…' : 'Arrastra archivos aquí o' }} <span *ngIf="!subiendo" class="text-brand-700">selecciónalos</span></span>
-      <span class="mt-1 text-xs text-zinc-500">Se guardan en el expediente #{{ cliente.idexpediente }} · hasta 4 MB por archivo</span>
+      <span class="mt-1 text-xs text-zinc-500">Se guardan en el expediente #{{ cliente.idexpediente | slice:0:8 }} · hasta 4 MB por archivo</span>
       <input id="archivo" type="file" multiple class="sr-only" [disabled]="subiendo" (change)="alElegir($event)" />
     </label>
 

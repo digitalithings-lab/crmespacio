@@ -6,7 +6,7 @@ const api = environment.apiUrl
 
 export interface Cliente {
   id: number
-  idexpediente: number
+  idexpediente: string
   nombre: string
   apellido: string
   correo: string
@@ -18,7 +18,7 @@ export interface Cliente {
 
 export interface Nota {
   idnota: number
-  idexpediente: number
+  idexpediente: string
   texto: string
   fecha_creacion: string
   cliente_nombre?: string
@@ -26,7 +26,7 @@ export interface Nota {
 }
 
 export interface Archivo {
-  idexpediente: number
+  idexpediente: string
   documento: string
   fecha_insercion: string
   url: string | null
@@ -49,7 +49,7 @@ export class ServiceclientesService {
   readonly abrirNota$ = this._abrirNota.asObservable()
 
   // Cliente al que pertenece la vista actual (el expediente abierto), para preseleccionarlo
-  readonly clienteContexto = new BehaviorSubject<number | null>(null)
+  readonly clienteContexto = new BehaviorSubject<string | null>(null)
 
   constructor(private http: HttpClient) { }
 
@@ -67,7 +67,7 @@ export class ServiceclientesService {
   listarClientes(): Observable<any> {
     return this.http.get<any>(`${api}/listarclientes`)
   }
-  obtenerCliente(idexpediente: number): Observable<any> {
+  obtenerCliente(idexpediente: string): Observable<any> {
     return this.http.get<any>(`${api}/cliente/${idexpediente}`)
   }
 
@@ -77,17 +77,17 @@ export class ServiceclientesService {
       tap(() => this._notasActualizadas.next())
     )
   }
-  listarNotas(idexpediente?: number): Observable<any> {
+  listarNotas(idexpediente?: string): Observable<any> {
     return this.http.get<any>(idexpediente ? `${api}/notas/${idexpediente}` : `${api}/notas`)
   }
 
   // ---- Archivos (bucket) ----
-  subirArchivo(idexpediente: number, archivo: File): Observable<any> {
+  subirArchivo(idexpediente: string, archivo: File): Observable<any> {
     const form = new FormData()
     form.append('archivo', archivo)
     return this.http.post<any>(`${api}/subirarchivo/${idexpediente}`, form)
   }
-  listarArchivos(idexpediente?: number): Observable<any> {
+  listarArchivos(idexpediente?: string): Observable<any> {
     return this.http.get<any>(idexpediente ? `${api}/archivos/${idexpediente}` : `${api}/archivos`)
   }
 }

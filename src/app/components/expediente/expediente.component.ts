@@ -14,7 +14,7 @@ type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones'
   styleUrls: ['./expediente.component.css']
 })
 export class ExpedienteComponent implements OnInit, OnDestroy {
-  public id = 0
+  public id = ''
   public cliente: Cliente | null = null
   public cargando = true
   public noEncontrado = false
@@ -42,7 +42,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.id = Number(this.route.snapshot.paramMap.get('id'))
+    this.id = this.route.snapshot.paramMap.get('id') ?? ''
     // La nota flotante preselecciona a este cliente mientras estés en su expediente
     this.service.clienteContexto.next(this.id)
     this.cargarCliente()

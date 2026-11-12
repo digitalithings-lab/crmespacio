@@ -40,7 +40,7 @@ export class SalaComponent implements OnInit, OnDestroy {
 
   // Solo quien inició sesión en el panel ve el botón de notas (los invitados no)
   public esAdmin = !!localStorage.getItem('correo')
-  public idexpediente: number | null = null
+  public idexpediente: string | null = null
 
   private yo = this.nuevoId()
   private desde = 0

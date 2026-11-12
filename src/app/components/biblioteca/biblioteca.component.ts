@@ -14,7 +14,7 @@ export class BibliotecaComponent implements OnInit {
   public cargando = true
   public subiendo = false
   public arrastrando = false
-  public idexpediente: number | null = null
+  public idexpediente: string | null = null
 
   public filtro = 'Todos'
   public filtros = ['Todos', 'Documentos', 'Imágenes', 'Otros']

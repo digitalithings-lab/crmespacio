@@ -17,10 +17,10 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
   public cargandoClientes = false
   public clientes: Cliente[] = []
 
-  public idexpediente: number | null = null
+  public idexpediente: string | null = null
   public texto = ''
 
-  private contexto: number | null = null
+  private contexto: string | null = null
   private subs: Subscription[] = []
 
   constructor(private service: ServiceclientesService, private toast: ToastService) { }
