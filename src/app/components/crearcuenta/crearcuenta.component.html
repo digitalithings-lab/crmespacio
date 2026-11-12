@@ -1,0 +1,39 @@
+<div class="grid min-h-[100dvh] bg-white font-sans text-zinc-800 antialiased lg:grid-cols-2">
+  <section class="relative hidden flex-col justify-between overflow-hidden bg-brand-50 p-12 lg:flex">
+    <div class="absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full bg-brand-100/70"></div>
+    <div class="absolute -bottom-40 -left-24 h-[24rem] w-[24rem] rounded-full bg-brand-200/40"></div>
+    <img src="assets/img/Logo Espacio Vital.png" alt="Logo" class="relative h-12 w-12 object-contain" />
+    <div class="relative max-w-md">
+      <img src="assets/img/Logo Espacio Vital.png" alt="" aria-hidden="true" class="mb-10 h-40 w-auto object-contain" />
+      <h2 class="text-4xl font-extrabold leading-tight tracking-tight text-brand-900">Crea tu cuenta y empieza a organizar tu trabajo.</h2>
+      <p class="mt-4 max-w-sm text-base leading-relaxed text-zinc-600">Solo toma un minuto.</p>
+    </div>
+    <p class="relative text-sm text-zinc-500">© 2026</p>
+  </section>
+
+  <section class="flex items-center justify-center px-6 py-12">
+    <div class="w-full max-w-md" aria-labelledby="registro-title">
+      <img src="assets/img/Logo Espacio Vital.png" alt="Logo" class="mb-8 h-14 w-14 object-contain lg:hidden" />
+      <h1 id="registro-title" class="text-3xl font-extrabold tracking-tight">Crear cuenta</h1>
+      <p class="mt-2 text-sm text-zinc-500">Completa tus datos para registrarte.</p>
+
+      <div class="mt-8 grid gap-5 sm:grid-cols-2">
+        <div class=""><label for="nombre" class="mb-2 block text-sm font-semibold">Nombre</label><input id="nombre" name="nombre" [(ngModel)]="nombre" type="text" placeholder="Tu nombre" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class=""><label for="apellido" class="mb-2 block text-sm font-semibold">Apellido</label><input id="apellido"  name="apellido" [(ngModel)]="apellido" type="text" placeholder="Tu apellido" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class="sm:col-span-2"><label for="email" class="mb-2 block text-sm font-semibold">Correo electrónico</label><input  name="email"  [(ngModel)]="correo" id="email" type="email" placeholder="tu@correo.com" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class="sm:col-span-2"><label for="password" class="mb-2 block text-sm font-semibold">Contraseña</label><input name="password" id="password" [(ngModel)]="password" type="password" placeholder="Mínimo 8 caracteres" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class="sm:col-span-2">
+          <label for="fecha"  class="mb-2 block text-sm font-semibold">Fecha de creación</label>
+          <input id="fecha"  [(ngModel)]="fecha" type="date" disabled aria-describedby="fecha-ayuda" class="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-100 px-4 py-3 text-sm text-zinc-500" />
+          <p id="fecha-ayuda" class="mt-1.5 text-xs text-zinc-500">Se asigna automáticamente al crear la cuenta.</p>
+        </div>
+      </div>
+
+      <button (click)="crearcuenta()" [disabled]="cargando" [attr.aria-busy]="cargando" type="button" class="mt-8 disabled:cursor-not-allowed disabled:opacity-80 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+        <ng-container *ngIf="!cargando">Crear cuenta <i class="ph ph-arrow-right text-base"></i></ng-container>
+        <ng-container *ngIf="cargando"><i class="ph ph-spinner animate-spin text-lg"></i> Creando cuenta…</ng-container>
+      </button>
+      <p class="mt-6 text-center text-sm text-zinc-500">¿Ya tienes cuenta? <a routerLink="/login" class="rounded font-semibold text-brand-700 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">Inicia sesión</a></p>
+    </div>
+  </section>
+</div>

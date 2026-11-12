@@ -1,0 +1,130 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { Archivo, Cliente, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
+import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
+import { ToastService } from 'src/app/services/toast.service';
+
+type Pestana = 'expediente' | 'notas' | 'biblioteca'
+
+@Component({
+  selector: 'app-expediente',
+  templateUrl: './expediente.component.html',
+  styleUrls: ['./expediente.component.css']
+})
+export class ExpedienteComponent implements OnInit, OnDestroy {
+  public id = 0
+  public cliente: Cliente | null = null
+  public cargando = true
+  public noEncontrado = false
+  public tab: Pestana = 'expediente'
+
+  public notas: Nota[] = []
+  public cargandoNotas = true
+  public archivos: Archivo[] = []
+  public cargandoArchivos = true
+  public subiendo = false
+  public arrastrando = false
+
+  private sub?: Subscription
+
+  constructor(
+    private route: ActivatedRoute,
+    private service: ServiceclientesService,
+    private toast: ToastService
+  ) { }
+
+  ngOnInit(): void {
+    this.id = Number(this.route.snapshot.paramMap.get('id'))
+    // La nota flotante preselecciona a este cliente mientras estés en su expediente
+    this.service.clienteContexto.next(this.id)
+    this.cargarCliente()
+    this.cargarNotas()
+    this.cargarArchivos()
+    this.sub = this.service.notasActualizadas$.subscribe(() => this.cargarNotas())
+  }
+
+  ngOnDestroy(): void {
+    this.service.clienteContexto.next(null)
+    this.sub?.unsubscribe()
+  }
+
+  cargarCliente() {
+    this.service.obtenerCliente(this.id).subscribe({
+      next: (resp) => { this.cliente = resp.data; this.cargando = false },
+      error: () => { this.cargando = false; this.noEncontrado = true }
+    })
+  }
+
+  cargarNotas() {
+    this.service.listarNotas(this.id).subscribe({
+      next: (resp) => { this.notas = resp.data ?? []; this.cargandoNotas = false },
+      error: () => { this.cargandoNotas = false }
+    })
+  }
+
+  cargarArchivos() {
+    this.service.listarArchivos(this.id).subscribe({
+      next: (resp) => { this.archivos = resp.data ?? []; this.cargandoArchivos = false },
+      error: () => { this.cargandoArchivos = false }
+    })
+  }
+
+  cambiar(t: Pestana) { this.tab = t }
+
+  nuevaNota() { this.service.abrirNota() }
+
+  // ---- Archivos ----
+  alElegir(event: Event) {
+    const input = event.target as HTMLInputElement
+    this.subir(Array.from(input.files ?? []))
+    input.value = ''
+  }
+
+  alSoltar(event: DragEvent) {
+    event.preventDefault()
+    this.arrastrando = false
+    this.subir(Array.from(event.dataTransfer?.files ?? []))
+  }
+
+  alArrastrar(event: DragEvent) {
+    event.preventDefault()
+    this.arrastrando = true
+  }
+
+  private async subir(files: File[]) {
+    if (!files.length || this.subiendo) return
+    this.subiendo = true
+    for (const file of files) {
+      if (file.size > 4 * 1024 * 1024) {
+        this.toast.error(`"${file.name}" supera el límite de 4 MB`)
+        continue
+      }
+      try {
+        await new Promise<void>((ok, fail) =>
+          this.service.subirArchivo(this.id, file).subscribe({ next: () => ok(), error: (e) => fail(e) })
+        )
+        this.toast.success(`"${file.name}" subido`)
+      } catch (e: any) {
+        this.toast.error(e?.error?.message?.trim() || `No se pudo subir "${file.name}"`)
+      }
+    }
+    this.subiendo = false
+    this.cargarArchivos()
+  }
+
+  // ---- Presentación ----
+  iniciales() {
+    const c = this.cliente
+    return c ? `${c.nombre?.[0] ?? ''}${c.apellido?.[0] ?? ''}`.toUpperCase() : ''
+  }
+
+  claseTipo(tipo: string) {
+    if (tipo === 'Pareja') return 'bg-brand-50 text-brand-700'
+    if (tipo === 'Niños/Adolescentes') return 'bg-amber-50 text-amber-800'
+    return 'bg-zinc-100 text-zinc-700'
+  }
+
+  icono(nombre: string) { return iconoArchivo(nombre) }
+  tamano(bytes: number | null) { return formatoTamano(bytes) }
+}

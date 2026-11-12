@@ -1,0 +1,55 @@
+<div class="relative flex min-h-[100dvh] bg-zinc-50 font-sans text-zinc-800 antialiased">
+
+  <!-- Control del menú móvil (sin JS) -->
+  <input id="menu-toggle" type="checkbox" class="peer sr-only" />
+  <label for="menu-toggle" aria-label="Cerrar menú"
+    class="fixed inset-0 z-30 hidden bg-zinc-900/40 backdrop-blur-sm peer-checked:block lg:!hidden"></label>
+
+  <!-- Sidebar -->
+  <aside class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col border-r border-zinc-200 bg-white p-4 transition-transform duration-300 ease-in-out peer-checked:translate-x-0 lg:static lg:w-64 lg:translate-x-0">
+    <div class="flex items-center gap-3 px-2 py-3">
+      <img src="assets/img/Logo Espacio Vital.png" alt="Logo" class="h-10 w-10 object-contain" />
+    </div>
+
+    <p class="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">Menú</p>
+    <nav class="mt-2 flex-1 space-y-1" aria-label="Principal">
+        <a routerLink="/dashboard" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-house text-xl"></i>Dashboard</a>
+        <a routerLink="/clientes" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-users text-xl"></i>Clientes</a>
+        <a routerLink="/notas" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-note-pencil text-xl"></i>Notas</a>
+        <a routerLink="/biblioteca" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-books text-xl"></i>Biblioteca</a>
+        <a routerLink="/reuniones" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-video-camera text-xl"></i>Reuniones</a>
+    </nav>
+
+    <div class="flex items-center gap-3 rounded-xl border border-zinc-200 p-3">
+      <div class="flex h-9 w-9 items-center justify-center rounded-full bg-brand-700 text-sm font-bold text-white">U</div>
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-sm font-semibold">{{ nombre }} {{ apellido }}</p>
+        <p class="truncate text-xs text-zinc-500">{{correo}}</p>
+      </div>
+      <a routerLink="/login" aria-label="Cerrar sesión" class="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-sign-out text-lg"></i></a>
+    </div>
+  </aside>
+
+  <!-- Contenido -->
+  <div class="flex min-w-0 flex-1 flex-col">
+    <header class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-zinc-200 bg-white/80 px-4 backdrop-blur sm:px-8">
+      <label for="menu-toggle" aria-label="Abrir menú" class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-zinc-600 hover:bg-zinc-100 lg:hidden"><i class="ph ph-list text-2xl"></i></label>
+      <div class="relative max-w-md flex-1">
+        <i class="ph ph-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
+        <input type="search" placeholder="Buscar clientes, notas, archivos…" aria-label="Buscar"
+          class="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-2.5 pl-11 pr-4 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+      </div>
+      <button type="button" aria-label="Notificaciones" class="relative ml-auto flex h-10 w-10 items-center justify-center rounded-xl text-zinc-600 transition hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
+        <i class="ph ph-bell text-xl"></i>
+        <span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-brand-500 ring-2 ring-white"></span>
+      </button>
+    </header>
+
+    <main class="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-8">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Nota flotante en todas las páginas -->
+  <app-nota-flotante></app-nota-flotante>
+</div>

@@ -1,0 +1,38 @@
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="text-3xl font-extrabold tracking-tight">Notas</h1>
+    <p class="mt-1 text-sm text-zinc-500">Los apuntes de todos tus clientes.</p>
+  </div>
+  <button type="button" (click)="nueva()" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30"><i class="ph ph-plus text-base"></i> Nueva nota</button>
+</div>
+
+<div class="relative mt-8 max-w-md">
+  <i class="ph ph-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
+  <input type="search" [(ngModel)]="busqueda" aria-label="Buscar notas" placeholder="Buscar en las notas o por cliente"
+    class="w-full rounded-xl border border-zinc-200 bg-white py-2.5 pl-11 pr-4 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+</div>
+
+<!-- Skeleton -->
+<div *ngIf="cargando" class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
+  <div *ngFor="let n of [1,2,3]" class="animate-pulse rounded-2xl border border-zinc-200 bg-white p-6">
+    <div class="h-3 w-24 rounded bg-zinc-200"></div><div class="mt-4 h-3 w-full rounded bg-zinc-100"></div><div class="mt-2 h-3 w-5/6 rounded bg-zinc-100"></div><div class="mt-2 h-3 w-2/3 rounded bg-zinc-100"></div><div class="mt-6 h-3 w-1/3 rounded bg-zinc-100"></div>
+  </div>
+</div>
+
+<!-- Vacío -->
+<div *ngIf="!cargando && filtradas.length === 0" class="animate-fade-up mt-6 flex flex-col items-center rounded-2xl border-2 border-dashed border-zinc-300 bg-white px-6 py-14 text-center">
+  <span class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700"><i class="ph ph-note-pencil text-2xl"></i></span>
+  <p class="mt-4 font-semibold">{{ notas.length === 0 ? 'Aún no hay notas' : 'Sin resultados' }}</p>
+  <p class="mt-1 text-sm text-zinc-500">{{ notas.length === 0 ? 'Usa el botón flotante para escribir una.' : 'Prueba con otra búsqueda.' }}</p>
+</div>
+
+<div class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+  <article *ngFor="let n of filtradas; let i = index" class="animate-fade-up flex flex-col rounded-2xl border border-zinc-200 bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md" [style.animation-delay.ms]="i * 45">
+    <span class="text-xs font-medium text-zinc-400">{{ n.fecha_creacion | date: 'dd/MM/yyyy · HH:mm' }}</span>
+    <p class="mt-3 line-clamp-6 flex-1 whitespace-pre-line text-sm leading-relaxed text-zinc-700">{{ n.texto }}</p>
+    <a [routerLink]="['/clientes', n.idexpediente]" class="mt-5 flex items-center gap-2 border-t border-zinc-100 pt-4 text-xs font-medium text-zinc-500 transition hover:text-brand-700">
+      <i class="ph ph-user text-base"></i>{{ n.cliente_nombre }} {{ n.cliente_apellido }}
+      <i class="ph ph-arrow-right ml-auto"></i>
+    </a>
+  </article>
+</div>

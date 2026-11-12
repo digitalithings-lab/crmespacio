@@ -1,0 +1,29 @@
+<div class="pointer-events-none fixed inset-x-0 top-4 z-[100] flex flex-col items-center gap-3 px-4 sm:inset-x-auto sm:right-4 sm:items-end"
+     aria-live="polite" aria-atomic="true">
+  <div *ngFor="let t of toast.toasts$ | async"
+       class="toast-in pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border bg-white p-4 shadow-lg font-sans"
+       [ngClass]="{
+         'border-emerald-200': t.type === 'success',
+         'border-rose-200': t.type === 'error',
+         'border-zinc-200': t.type === 'info'
+       }"
+       [attr.role]="t.type === 'error' ? 'alert' : 'status'">
+    <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+          [ngClass]="{
+            'bg-emerald-50 text-emerald-600': t.type === 'success',
+            'bg-rose-50 text-rose-600': t.type === 'error',
+            'bg-zinc-100 text-zinc-600': t.type === 'info'
+          }">
+      <i class="ph text-base" [ngClass]="{
+        'ph-check': t.type === 'success',
+        'ph-warning': t.type === 'error',
+        'ph-info': t.type === 'info'
+      }"></i>
+    </span>
+    <p class="min-w-0 flex-1 text-sm font-medium leading-snug text-zinc-800">{{ t.message }}</p>
+    <button type="button" (click)="toast.dismiss(t.id)" aria-label="Cerrar notificación"
+            class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
+      <i class="ph ph-x text-sm"></i>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,153 @@
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="text-3xl font-extrabold tracking-tight">Clientes</h1>
+    <p class="mt-1 text-sm text-zinc-500">Administra tu lista de clientes y sus expedientes.</p>
+  </div>
+  <button type="button" (click)="abrir()" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+    <i class="ph ph-plus text-base"></i> Nuevo cliente
+  </button>
+</div>
+
+<!-- Tabla -->
+<div class="mt-8 overflow-hidden rounded-2xl border border-zinc-200 bg-white">
+  <div class="flex flex-wrap items-center gap-3 border-b border-zinc-200 p-4">
+    <div class="relative w-full sm:w-80">
+      <i class="ph ph-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
+      <input type="search" [(ngModel)]="busqueda" aria-label="Buscar cliente" placeholder="Buscar por nombre, correo o cédula" class="w-full rounded-xl border border-zinc-200 py-2.5 pl-11 pr-4 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+    </div>
+    <select [(ngModel)]="filtroTipo" aria-label="Filtrar por tipo" class="rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm text-zinc-600 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
+      <option value="">Todos los tipos</option>
+      <option *ngFor="let t of tipos" [value]="t">{{ t }}</option>
+    </select>
+  </div>
+
+  <div class="overflow-x-auto" [attr.aria-busy]="cargando">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-zinc-50 text-xs uppercase tracking-wider text-zinc-500">
+        <tr>
+          <th scope="col" class="px-6 py-3 font-semibold">Cliente</th>
+          <th scope="col" class="hidden px-6 py-3 font-semibold md:table-cell">Cédula</th>
+          <th scope="col" class="hidden px-6 py-3 font-semibold lg:table-cell">Teléfono</th>
+          <th scope="col" class="hidden px-6 py-3 font-semibold sm:table-cell">Edad</th>
+          <th scope="col" class="px-6 py-3 font-semibold">Tipo</th>
+          <th scope="col" class="px-6 py-3"><span class="sr-only">Abrir expediente</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-zinc-100">
+      <ng-container *ngIf="cargando">
+        <tr class="animate-pulse" aria-hidden="true">
+          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
+          <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
+        </tr>
+        <tr class="animate-pulse" aria-hidden="true">
+          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
+          <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
+        </tr>
+        <tr class="animate-pulse" aria-hidden="true">
+          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
+          <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
+        </tr>
+        <tr class="animate-pulse" aria-hidden="true">
+          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
+          <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
+        </tr>
+        <tr class="animate-pulse" aria-hidden="true">
+          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
+          <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
+          <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
+          <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
+        </tr>
+      </ng-container>
+
+      <ng-container *ngIf="!cargando">
+        <tr *ngFor="let c of filtrados; let i = index" (click)="ver(c)"
+            class="group animate-fade-in cursor-pointer transition hover:bg-zinc-50"
+            [style.animation-delay.ms]="i * 35">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700 transition group-hover:scale-110">{{ iniciales(c) }}</div>
+              <div class="min-w-0">
+                <a [routerLink]="['/clientes', c.idexpediente]" (click)="$event.stopPropagation()" class="font-semibold hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">{{ c.nombre }} {{ c.apellido }}</a>
+                <p class="truncate text-xs text-zinc-500">{{ c.correo }}</p>
+              </div>
+            </div>
+          </td>
+          <td class="hidden px-6 py-4 text-zinc-600 md:table-cell">{{ c.cedula }}</td>
+          <td class="hidden px-6 py-4 text-zinc-600 lg:table-cell">{{ c.telefono }}</td>
+          <td class="hidden px-6 py-4 text-zinc-600 sm:table-cell">{{ c.edad }}</td>
+          <td class="px-6 py-4"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(c.tipo)">{{ c.tipo }}</span></td>
+          <td class="px-6 py-4 text-right"><i class="ph ph-caret-right text-lg text-zinc-300 transition group-hover:translate-x-1 group-hover:text-brand-700"></i></td>
+        </tr>
+      </ng-container>
+      </tbody>
+    </table>
+
+    <!-- Estado vacío -->
+    <div *ngIf="!cargando && filtrados.length === 0" class="animate-fade-up flex flex-col items-center px-6 py-14 text-center">
+      <span class="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700"><i class="ph ph-users text-2xl"></i></span>
+      <p class="mt-4 font-semibold">{{ clientes.length === 0 ? 'Aún no tienes clientes' : 'Sin resultados' }}</p>
+      <p class="mt-1 text-sm text-zinc-500">{{ clientes.length === 0 ? 'Crea el primero para abrir su expediente.' : 'Prueba con otra búsqueda o filtro.' }}</p>
+    </div>
+  </div>
+
+  <div *ngIf="!cargando && clientes.length > 0" class="border-t border-zinc-200 px-6 py-4 text-sm text-zinc-500">
+    Mostrando {{ filtrados.length }} de {{ clientes.length }} clientes
+  </div>
+</div>
+
+<!-- Modal: nuevo cliente -->
+<div *ngIf="abierto" class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="cliente-title">
+  <div (click)="cerrar()" class="animate-fade-in absolute inset-0 bg-zinc-900/40 backdrop-blur-sm"></div>
+  <form #f="ngForm" (ngSubmit)="guardar()" class="animate-scale-in relative max-h-[92dvh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 id="cliente-title" class="text-2xl font-extrabold tracking-tight">Nuevo cliente</h2>
+        <p class="mt-1 text-sm text-zinc-500">Se creará su expediente automáticamente.</p>
+      </div>
+      <button type="button" (click)="cerrar()" aria-label="Cerrar" class="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700"><i class="ph ph-x text-lg"></i></button>
+    </div>
+
+    <div class="mt-6 grid gap-5 sm:grid-cols-2">
+        <div class=""><label for="c-nombre" class="mb-2 block text-sm font-semibold">Nombre</label><input id="c-nombre" name="c-nombre" type="text" [(ngModel)]="nombre" required placeholder="Nombre" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class=""><label for="c-apellido" class="mb-2 block text-sm font-semibold">Apellido</label><input id="c-apellido" name="c-apellido" type="text" [(ngModel)]="apellido" required placeholder="Apellido" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class="sm:col-span-2"><label for="c-correo" class="mb-2 block text-sm font-semibold">Correo</label><input id="c-correo" name="c-correo" type="email" [(ngModel)]="correo" required placeholder="correo@ejemplo.com" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class=""><label for="c-cedula" class="mb-2 block text-sm font-semibold">Cédula</label><input id="c-cedula" name="c-cedula" type="text" [(ngModel)]="cedula" required placeholder="Número de cédula" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class=""><label for="c-telefono" class="mb-2 block text-sm font-semibold">Teléfono</label><input id="c-telefono" name="c-telefono" type="tel" [(ngModel)]="telefono" required placeholder="Número de teléfono" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div class=""><label for="c-edad" class="mb-2 block text-sm font-semibold">Edad</label><input id="c-edad" name="c-edad" type="number" [(ngModel)]="edad" required placeholder="Edad" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+      <div class="sm:col-span-2">
+        <span id="tipo-label" class="mb-2 block text-sm font-semibold">Tipo</span>
+        <div role="radiogroup" aria-labelledby="tipo-label" class="grid grid-cols-3 gap-3">
+          <label class="cursor-pointer"><input type="radio" name="tipo" value="Pareja" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-heart text-2xl"></i>Pareja</span></label>
+          <label class="cursor-pointer"><input type="radio" name="tipo" value="Individual" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-user text-2xl"></i>Individual</span></label>
+          <label class="cursor-pointer"><input type="radio" name="tipo" value="Niños/Adolescentes" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-baby text-2xl"></i>Niños/Adolescentes</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 flex justify-end gap-3">
+      <button type="button" (click)="cerrar()" class="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50">Cancelar</button>
+      <button type="submit" [disabled]="f.invalid || guardando" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+        <ng-container *ngIf="!guardando">Guardar cliente</ng-container>
+        <ng-container *ngIf="guardando"><i class="ph ph-spinner animate-spin text-lg"></i> Guardando…</ng-container>
+      </button>
+    </div>
+  </form>
+</div>

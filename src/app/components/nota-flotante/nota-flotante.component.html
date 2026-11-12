@@ -1,0 +1,46 @@
+<!-- Botón flotante: disponible en todas las páginas del panel -->
+<button type="button" (click)="abrir()" aria-label="Escribir nueva nota"
+  class="group fixed bottom-6 right-6 z-40 flex h-14 items-center gap-0 rounded-full bg-brand-700 pl-[1.1rem] pr-[1.1rem] text-white shadow-lg shadow-brand-900/25 transition-all duration-300 hover:gap-2 hover:bg-brand-800 hover:pr-5 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30"
+  [class.pointer-events-none]="abierto" [class.scale-0]="abierto" [class.opacity-0]="abierto">
+  <i class="ph ph-pencil-simple-line text-2xl"></i>
+  <span class="max-w-0 overflow-hidden whitespace-nowrap text-sm font-semibold opacity-0 transition-all duration-300 group-hover:max-w-[7rem] group-hover:opacity-100 group-focus-visible:max-w-[7rem] group-focus-visible:opacity-100">Nueva nota</span>
+</button>
+
+<!-- Panel para escribir -->
+<div *ngIf="abierto" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="nota-title">
+  <div (click)="cerrar()" class="animate-fade-in absolute inset-0 bg-zinc-900/40 backdrop-blur-sm"></div>
+
+  <form #f="ngForm" (ngSubmit)="guardar()" class="animate-slide-up sm:animate-scale-in relative flex max-h-[92dvh] w-full max-w-2xl flex-col rounded-t-3xl bg-white shadow-xl sm:rounded-2xl">
+    <div class="flex items-center justify-between gap-4 border-b border-zinc-100 px-6 py-4 sm:px-8">
+      <h2 id="nota-title" class="text-xl font-extrabold tracking-tight">Nueva nota</h2>
+      <button type="button" (click)="cerrar()" aria-label="Cerrar" class="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700"><i class="ph ph-x text-lg"></i></button>
+    </div>
+
+    <div class="flex-1 space-y-5 overflow-y-auto px-6 py-6 sm:px-8">
+
+      <div>
+        <label for="n-cliente" class="mb-2 block text-sm font-semibold">Cliente</label>
+        <select id="n-cliente" name="idexpediente" [(ngModel)]="idexpediente" required
+          class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-700 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
+          <option [ngValue]="null" disabled>{{ cargandoClientes ? 'Cargando clientes…' : 'Selecciona un cliente' }}</option>
+          <option *ngFor="let c of clientes" [ngValue]="c.idexpediente">{{ c.nombre }} {{ c.apellido }}</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="n-texto" class="mb-2 block text-sm font-semibold">Nota</label>
+        <textarea id="n-texto" name="texto" [(ngModel)]="texto" required rows="9" placeholder="Escribe aquí tu nota…"
+          class="w-full resize-none rounded-xl border border-zinc-300 px-4 py-3 text-sm leading-relaxed placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10"></textarea>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 border-t border-zinc-100 px-6 py-4 sm:px-8">
+      <button type="button" (click)="cerrar()" class="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50">Cancelar</button>
+      <button type="submit" [disabled]="f.invalid || guardando"
+        class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+        <ng-container *ngIf="!guardando"><i class="ph ph-floppy-disk text-base"></i> Guardar nota</ng-container>
+        <ng-container *ngIf="guardando"><i class="ph ph-spinner animate-spin text-lg"></i> Guardando…</ng-container>
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,55 @@
+<div>
+  <h1 class="text-3xl font-extrabold tracking-tight">Reuniones</h1>
+  <p class="mt-1 text-sm text-zinc-500">Crea una videollamada y comparte el enlace con quien quieras, sin que tenga que registrarse.</p>
+</div>
+
+<div class="mt-8 grid gap-6 lg:grid-cols-5">
+  <!-- Nueva reunión -->
+  <section class="rounded-2xl border border-zinc-200 bg-white p-6 lg:col-span-3">
+    <div class="flex items-center gap-3">
+      <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700"><i class="ph ph-video-camera text-xl"></i></span>
+      <h2 class="font-bold">Nueva reunión</h2>
+    </div>
+
+    <ng-container *ngIf="!codigo">
+      <label for="r-nombre" class="mt-6 mb-2 block text-sm font-semibold">Nombre de la reunión <span class="font-normal text-zinc-400">(opcional)</span></label>
+      <input id="r-nombre" [(ngModel)]="nombre" name="nombre" type="text" placeholder="Ej. Sesión con María" (keyup.enter)="crear()"
+        class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+      <button type="button" (click)="crear()" [disabled]="creando"
+        class="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+        <ng-container *ngIf="!creando"><i class="ph ph-plus text-base"></i> Crear reunión</ng-container>
+        <ng-container *ngIf="creando"><i class="ph ph-spinner animate-spin text-lg"></i> Creando…</ng-container>
+      </button>
+    </ng-container>
+
+    <div *ngIf="codigo" class="animate-fade-up mt-6">
+      <p class="flex items-center gap-2 text-sm font-semibold text-emerald-700"><i class="ph ph-check-circle text-lg"></i> Reunión lista. Comparte este enlace:</p>
+      <div class="mt-3 flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 p-2 pl-4">
+        <i class="ph ph-link text-lg text-zinc-400"></i>
+        <input [value]="enlace" readonly aria-label="Enlace de la reunión" (focus)="$any($event.target).select()" class="min-w-0 flex-1 bg-transparent text-sm text-zinc-700 focus:outline-none" />
+        <button type="button" (click)="copiar()" class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-zinc-700 shadow-sm ring-1 ring-zinc-200 transition hover:bg-zinc-100 active:scale-95">
+          <i class="ph text-base" [ngClass]="copiado ? 'ph-check-circle text-emerald-600' : 'ph-copy'"></i> {{ copiado ? 'Copiado' : 'Copiar' }}
+        </button>
+      </div>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <button type="button" (click)="entrar()" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30"><i class="ph ph-video-camera text-base"></i> Entrar ahora</button>
+        <button type="button" (click)="codigo = ''; nombre = ''" class="rounded-xl border border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50">Crear otra</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Unirse -->
+  <section class="rounded-2xl border border-zinc-200 bg-white p-6 lg:col-span-2">
+    <div class="flex items-center gap-3">
+      <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600"><i class="ph ph-users text-xl"></i></span>
+      <h2 class="font-bold">Unirse a una reunión</h2>
+    </div>
+    <label for="r-codigo" class="mt-6 mb-2 block text-sm font-semibold">Código o enlace</label>
+    <input id="r-codigo" [(ngModel)]="codigoUnirse" name="codigoUnirse" type="text" placeholder="abc-defg-hij" (keyup.enter)="unirse()"
+      class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+    <button type="button" (click)="unirse()" [disabled]="!codigoUnirse.trim()"
+      class="mt-5 w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">Unirse</button>
+  </section>
+</div>
+
+<p class="mt-6 flex items-start gap-2 text-xs text-zinc-500"><i class="ph ph-info text-base"></i> Las videollamadas van directo entre los navegadores y funcionan bien para 2 a 4 personas. Se necesita permitir cámara y micrófono.</p>

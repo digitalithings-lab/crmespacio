@@ -1,0 +1,114 @@
+<div class="min-h-[100dvh] bg-zinc-950 font-sans text-white antialiased">
+
+  <!-- Cargando -->
+  <div *ngIf="fase === 'cargando'" class="flex min-h-[100dvh] items-center justify-center">
+    <i class="ph ph-spinner animate-spin text-3xl text-zinc-400"></i>
+  </div>
+
+  <!-- No existe -->
+  <div *ngIf="fase === 'noexiste'" class="animate-fade-up flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
+    <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white/10"><i class="ph ph-video-camera-slash text-3xl"></i></span>
+    <h1 class="mt-6 text-2xl font-extrabold">Esta reunión no existe</h1>
+    <p class="mt-2 max-w-sm text-sm text-zinc-400">Revisa que el enlace esté completo o pide que te envíen uno nuevo.</p>
+  </div>
+
+  <!-- Salida -->
+  <div *ngIf="fase === 'fin'" class="animate-fade-up flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
+    <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white/10"><i class="ph ph-phone-disconnect text-3xl"></i></span>
+    <h1 class="mt-6 text-2xl font-extrabold">Saliste de la reunión</h1>
+    <button type="button" (click)="volverAEntrar()" class="mt-6 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-200 active:scale-[0.98]">Volver a entrar</button>
+  </div>
+
+  <!-- Lobby -->
+  <div *ngIf="fase === 'lobby'" class="mx-auto flex min-h-[100dvh] max-w-5xl flex-col justify-center gap-8 px-4 py-10 lg:flex-row lg:items-center">
+    <div class="animate-fade-up w-full lg:w-3/5">
+      <div class="relative aspect-video overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10">
+        <video *ngIf="tieneVideo && camActivo" [srcObject]="vistaLocal" autoplay playsinline muted class="h-full w-full -scale-x-100 object-cover"></video>
+        <div *ngIf="!tieneVideo || !camActivo" class="flex h-full w-full items-center justify-center">
+          <span class="flex h-20 w-20 items-center justify-center rounded-full bg-brand-700 text-2xl font-extrabold">{{ iniciales(nombre) || '?' }}</span>
+        </div>
+        <div class="absolute inset-x-0 bottom-0 flex justify-center gap-3 bg-gradient-to-t from-black/60 to-transparent p-4">
+          <button type="button" (click)="alternarMic()" [disabled]="!tieneAudio" [attr.aria-label]="micActivo ? 'Silenciar micrófono' : 'Activar micrófono'"
+            class="flex h-12 w-12 items-center justify-center rounded-full transition active:scale-90 disabled:opacity-40"
+            [ngClass]="micActivo ? 'bg-white/15 hover:bg-white/25' : 'bg-rose-600 hover:bg-rose-500'"><i class="ph text-xl" [ngClass]="micActivo ? 'ph-microphone' : 'ph-microphone-slash'"></i></button>
+          <button type="button" (click)="alternarCamara()" [disabled]="!tieneVideo" [attr.aria-label]="camActivo ? 'Apagar cámara' : 'Encender cámara'"
+            class="flex h-12 w-12 items-center justify-center rounded-full transition active:scale-90 disabled:opacity-40"
+            [ngClass]="camActivo ? 'bg-white/15 hover:bg-white/25' : 'bg-rose-600 hover:bg-rose-500'"><i class="ph text-xl" [ngClass]="camActivo ? 'ph-video-camera' : 'ph-video-camera-slash'"></i></button>
+        </div>
+      </div>
+      <p *ngIf="avisoPermisos" class="mt-3 flex items-start gap-2 text-sm text-amber-300"><i class="ph ph-warning text-lg"></i> {{ avisoPermisos }}</p>
+    </div>
+
+    <div class="animate-fade-up w-full lg:w-2/5" style="animation-delay: 80ms">
+      <h1 class="text-3xl font-extrabold tracking-tight">{{ nombreSala || 'Reunión' }}</h1>
+      <p class="mt-1 text-sm text-zinc-400">Código: {{ codigo }}</p>
+      <label for="s-nombre" class="mt-8 mb-2 block text-sm font-semibold">Tu nombre</label>
+      <input id="s-nombre" [(ngModel)]="nombre" name="nombre" type="text" placeholder="Cómo te verán los demás" (keyup.enter)="unirse()"
+        class="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm placeholder:text-zinc-500 transition focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/20" />
+      <button type="button" (click)="unirse()"
+        class="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-500 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/40">
+        Unirse ahora <i class="ph ph-arrow-right text-base"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Llamada -->
+  <div *ngIf="fase === 'llamada'" class="flex h-[100dvh] flex-col">
+    <header class="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <div class="min-w-0">
+        <p class="truncate text-sm font-semibold">{{ nombreSala || 'Reunión' }}</p>
+        <p class="text-xs text-zinc-400">{{ participantes.length + 1 }} {{ participantes.length === 0 ? 'persona' : 'personas' }} · {{ codigo }}</p>
+      </div>
+      <button type="button" (click)="copiar()" class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-white/10 px-3.5 py-2 text-sm font-semibold transition hover:bg-white/20 active:scale-95">
+        <i class="ph text-base" [ngClass]="copiado ? 'ph-check-circle text-emerald-400' : 'ph-link'"></i> {{ copiado ? 'Copiado' : 'Copiar enlace' }}
+      </button>
+    </header>
+
+    <main class="min-h-0 flex-1 px-4 pb-4 sm:px-6">
+      <div class="grid h-full auto-rows-fr gap-3" [ngClass]="gridClase()">
+        <!-- Yo -->
+        <div class="animate-scale-in relative overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10">
+          <video *ngIf="vistaLocal && (compartiendo || (tieneVideo && camActivo))" [srcObject]="vistaLocal" autoplay playsinline muted class="h-full w-full object-cover" [ngClass]="compartiendo ? 'object-contain' : '-scale-x-100'"></video>
+          <div *ngIf="!(vistaLocal && (compartiendo || (tieneVideo && camActivo)))" class="flex h-full w-full items-center justify-center">
+            <span class="flex h-20 w-20 items-center justify-center rounded-full bg-brand-700 text-2xl font-extrabold">{{ iniciales(nombre) }}</span>
+          </div>
+          <span class="absolute bottom-3 left-3 rounded-lg bg-black/60 px-2.5 py-1 text-xs font-semibold backdrop-blur">Tú</span>
+          <span *ngIf="!micActivo" class="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full bg-rose-600"><i class="ph ph-microphone-slash text-sm"></i></span>
+        </div>
+
+        <!-- Los demás -->
+        <div *ngFor="let p of participantes" class="animate-scale-in relative overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10">
+          <video [srcObject]="p.stream" autoplay playsinline class="h-full w-full object-cover"></video>
+          <div *ngIf="!p.conectado" class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-900">
+            <span class="flex h-20 w-20 items-center justify-center rounded-full bg-zinc-700 text-2xl font-extrabold">{{ iniciales(p.nombre) }}</span>
+            <span class="flex items-center gap-2 text-xs text-zinc-400"><i class="ph ph-spinner animate-spin"></i> Conectando…</span>
+          </div>
+          <span class="absolute bottom-3 left-3 rounded-lg bg-black/60 px-2.5 py-1 text-xs font-semibold backdrop-blur">{{ p.nombre }}</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Invitación si estás solo -->
+    <div *ngIf="participantes.length === 0" class="animate-fade-up pointer-events-none absolute inset-x-0 bottom-28 flex justify-center px-4">
+      <div class="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl bg-white/10 px-4 py-3 text-sm backdrop-blur">
+        <i class="ph ph-users text-xl text-zinc-300"></i>
+        <span class="text-zinc-200">Esperando a que alguien más se una. Comparte el enlace.</span>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <footer class="flex justify-center gap-3 px-4 pb-6 pt-2">
+      <button type="button" (click)="alternarMic()" [disabled]="!tieneAudio" [attr.aria-label]="micActivo ? 'Silenciar micrófono' : 'Activar micrófono'"
+        class="flex h-14 w-14 items-center justify-center rounded-full transition duration-200 active:scale-90 disabled:opacity-40"
+        [ngClass]="micActivo ? 'bg-white/15 hover:bg-white/25' : 'bg-rose-600 hover:bg-rose-500'"><i class="ph text-2xl" [ngClass]="micActivo ? 'ph-microphone' : 'ph-microphone-slash'"></i></button>
+      <button type="button" (click)="alternarCamara()" [disabled]="!tieneVideo" [attr.aria-label]="camActivo ? 'Apagar cámara' : 'Encender cámara'"
+        class="flex h-14 w-14 items-center justify-center rounded-full transition duration-200 active:scale-90 disabled:opacity-40"
+        [ngClass]="camActivo ? 'bg-white/15 hover:bg-white/25' : 'bg-rose-600 hover:bg-rose-500'"><i class="ph text-2xl" [ngClass]="camActivo ? 'ph-video-camera' : 'ph-video-camera-slash'"></i></button>
+      <button type="button" (click)="alternarPantalla()" [attr.aria-label]="compartiendo ? 'Dejar de compartir pantalla' : 'Compartir pantalla'"
+        class="hidden h-14 w-14 items-center justify-center rounded-full transition duration-200 active:scale-90 sm:flex"
+        [ngClass]="compartiendo ? 'bg-brand-600 hover:bg-brand-500' : 'bg-white/15 hover:bg-white/25'"><i class="ph ph-monitor-arrow-up text-2xl"></i></button>
+      <button type="button" (click)="salir()" aria-label="Salir de la reunión"
+        class="flex h-14 items-center gap-2 rounded-full bg-rose-600 px-6 text-sm font-semibold transition duration-200 hover:bg-rose-500 active:scale-95"><i class="ph ph-phone-disconnect text-2xl"></i><span class="hidden sm:inline">Salir</span></button>
+    </footer>
+  </div>
+</div>
