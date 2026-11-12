@@ -3,9 +3,10 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Archivo, Cliente, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
+import { ServicesalaService } from 'src/app/services/servicesala.service';
 import { ToastService } from 'src/app/services/toast.service';
 
-type Pestana = 'expediente' | 'notas' | 'biblioteca'
+type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones'
 
 @Component({
   selector: 'app-expediente',
@@ -26,11 +27,17 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   public subiendo = false
   public arrastrando = false
 
+  public salas: any[] = []
+  public cargandoSalas = true
+  public creandoSala = false
+  public nombreSala = ''
+
   private sub?: Subscription
 
   constructor(
     private route: ActivatedRoute,
     private service: ServiceclientesService,
+    private salaService: ServicesalaService,
     private toast: ToastService
   ) { }
 
@@ -41,6 +48,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     this.cargarCliente()
     this.cargarNotas()
     this.cargarArchivos()
+    this.cargarSalas()
     this.sub = this.service.notasActualizadas$.subscribe(() => this.cargarNotas())
   }
 
@@ -68,6 +76,39 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
       next: (resp) => { this.archivos = resp.data ?? []; this.cargandoArchivos = false },
       error: () => { this.cargandoArchivos = false }
     })
+  }
+
+  cargarSalas() {
+    this.salaService.listarSalas(this.id).subscribe({
+      next: (resp) => { this.salas = resp.data ?? []; this.cargandoSalas = false },
+      error: () => { this.cargandoSalas = false }
+    })
+  }
+
+  crearReunion() {
+    if (this.creandoSala) return
+    this.creandoSala = true
+    this.salaService.crearSala(this.id, this.nombreSala.trim()).subscribe({
+      next: () => {
+        this.creandoSala = false
+        this.nombreSala = ''
+        this.toast.success('Reunión creada')
+        this.cargarSalas()
+      },
+      error: (err) => {
+        this.creandoSala = false
+        this.toast.error(err.error?.message?.trim() || 'No se pudo crear la reunión')
+      }
+    })
+  }
+
+  async copiarEnlace(codigo: string) {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/sala/${codigo}`)
+      this.toast.success('Enlace copiado')
+    } catch {
+      this.toast.error('No se pudo copiar el enlace')
+    }
   }
 
   cambiar(t: Pestana) { this.tab = t }

@@ -21,8 +21,13 @@ export class ServicesalaService {
 
   constructor(private http: HttpClient) { }
 
-  crearSala(nombre?: string): Observable<any> {
-    return this.http.post<any>(`${api}/crearsala`, { nombre })
+  // Toda reunión pertenece a un cliente (idexpediente) y queda en su historial
+  crearSala(idexpediente: number, nombre?: string): Observable<any> {
+    return this.http.post<any>(`${api}/crearsala`, { idexpediente, nombre })
+  }
+
+  listarSalas(idexpediente?: number): Observable<any> {
+    return this.http.get<any>(idexpediente ? `${api}/salas/${idexpediente}` : `${api}/salas`)
   }
 
   obtenerSala(codigo: string): Observable<any> {

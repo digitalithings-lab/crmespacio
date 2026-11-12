@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ServiceadminService } from 'src/app/services/serviceadmin.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +13,7 @@ export class LoginComponent implements OnInit {
   public password:any
   public data:any
   public cargando = false
-  constructor(private service:ServiceadminService,private route: Router){
+  constructor(private service:ServiceadminService,private route: Router,private toast: ToastService){
 
   }
   ngOnInit(): void {
@@ -39,7 +40,13 @@ export class LoginComponent implements OnInit {
         localStorage.setItem('correo',data.correo)
       }
     },
-    error: () => { this.cargando = false }
+    error: (err) => {
+      this.cargando = false
+      // Sin respuesta del servidor (status 0) o el mensaje que envía el backend
+      this.toast.error(err.status === 0
+        ? 'No se pudo conectar con el servidor'
+        : (err.error?.message?.trim() || 'No se pudo iniciar sesión'))
+    }
   })
   }
 

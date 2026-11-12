@@ -1,6 +1,7 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { Senal, ServicesalaService } from 'src/app/services/servicesala.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -37,6 +38,10 @@ export class SalaComponent implements OnInit, OnDestroy {
   public participantes: Participante[] = []
   public copiado = false
 
+  // Solo quien inició sesión en el panel ve el botón de notas (los invitados no)
+  public esAdmin = !!localStorage.getItem('correo')
+  public idexpediente: number | null = null
+
   private yo = this.nuevoId()
   private desde = 0
   private activo = false
@@ -51,6 +56,7 @@ export class SalaComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private service: ServicesalaService,
+    private clientes: ServiceclientesService,
     private toast: ToastService
   ) { }
 
@@ -63,6 +69,9 @@ export class SalaComponent implements OnInit, OnDestroy {
     this.service.obtenerSala(this.codigo).subscribe({
       next: (resp) => {
         this.nombreSala = resp.data?.nombre ?? ''
+        this.idexpediente = resp.data?.idexpediente ?? null
+        // La nota flotante deja seleccionado al cliente de esta reunión
+        if (this.esAdmin && this.idexpediente) this.clientes.clienteContexto.next(this.idexpediente)
         this.fase = 'lobby'
         this.iniciarVistaPrevia()
       },
@@ -71,6 +80,7 @@ export class SalaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.esAdmin) this.clientes.clienteContexto.next(null)
     this.cerrarTodo(true)
   }
 
@@ -86,7 +96,7 @@ export class SalaComponent implements OnInit, OnDestroy {
   // ================= Cámara y micrófono =================
   private async iniciarVistaPrevia() {
     const intentos: MediaStreamConstraints[] = [
-      { video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: true },
+      { video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' }, audio: true },
       { video: false, audio: true },
       { video: true, audio: false }
     ]
@@ -218,14 +228,14 @@ export class SalaComponent implements OnInit, OnDestroy {
       case 'join': {
         // Quien ya estaba en la sala es quien llama a la persona que llega
         if (this.buscar(s.de)) return
-        const p = this.crearPeer(s.de, s.payload?.nombre)
+        const p = this.crearPeer(s.de, s.payload?.nombre, true)
         const oferta = await p.pc.createOffer()
         await p.pc.setLocalDescription(oferta)
         await this.enviar('offer', s.de, { sdp: p.pc.localDescription, nombre: this.nombre.trim() })
         break
       }
       case 'offer': {
-        const p = this.buscar(s.de) ?? this.crearPeer(s.de, s.payload?.nombre)
+        const p = this.buscar(s.de) ?? this.crearPeer(s.de, s.payload?.nombre, false)
         if (s.payload?.nombre) p.nombre = s.payload.nombre
         await p.pc.setRemoteDescription(s.payload.sdp)
         await this.vaciarPendientes(p)
@@ -270,19 +280,25 @@ export class SalaComponent implements OnInit, OnDestroy {
     return this.participantes.find(p => p.id === id)
   }
 
-  private crearPeer(id: string, nombre?: string): Participante {
+  private crearPeer(id: string, nombre: string | undefined, iniciador: boolean): Participante {
     const pc = new RTCPeerConnection(this.rtcConfig)
     const stream = new MediaStream()
     const p: Participante = { id, nombre: nombre || 'Invitado', stream, pc, conectado: false }
     this.participantes = [...this.participantes, p]
 
-    // Enviamos nuestro audio y video; si no tenemos alguno, igual dejamos el canal abierto
+    // IMPORTANTE: se usa addTrack (no addTransceiver). Así, cuando llega una oferta,
+    // el navegador reutiliza estos canales y nuestro audio y video SÍ se envían en la respuesta.
     const audio = this.local?.getAudioTracks()[0]
     const video = this.compartiendo ? this.pantalla?.getVideoTracks()[0] : this.local?.getVideoTracks()[0]
-    if (audio) pc.addTransceiver(audio, { direction: 'sendrecv', streams: [this.local!] })
-    else pc.addTransceiver('audio', { direction: 'sendrecv' })
-    if (video) pc.addTransceiver(video, { direction: 'sendrecv', streams: [this.local!] })
-    else pc.addTransceiver('video', { direction: 'sendrecv' })
+    const flujo = this.local ?? new MediaStream()
+    if (audio) pc.addTrack(audio, flujo)
+    if (video) pc.addTrack(video, flujo)
+
+    // Quien ofrece deja siempre abiertos canales de audio y video, aunque no tenga cámara o micrófono
+    if (iniciador) {
+      if (!audio) pc.addTransceiver('audio', { direction: 'sendrecv' })
+      if (!video) pc.addTransceiver('video', { direction: 'sendrecv' })
+    }
 
     pc.ontrack = (e) => {
       if (!stream.getTracks().includes(e.track)) stream.addTrack(e.track)

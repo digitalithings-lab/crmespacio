@@ -111,4 +111,7 @@
         class="flex h-14 items-center gap-2 rounded-full bg-rose-600 px-6 text-sm font-semibold transition duration-200 hover:bg-rose-500 active:scale-95"><i class="ph ph-phone-disconnect text-2xl"></i><span class="hidden sm:inline">Salir</span></button>
     </footer>
   </div>
+
+  <!-- Notas durante la llamada (solo para quien inició sesión) -->
+  <app-nota-flotante *ngIf="esAdmin && fase === 'llamada'" posicion="bottom-24 right-4 sm:bottom-6 sm:right-6"></app-nota-flotante>
 </div>

@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Cliente, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -9,6 +9,9 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./nota-flotante.component.css']
 })
 export class NotaFlotanteComponent implements OnInit, OnDestroy {
+  // Clases de posición del botón (cambia según la pantalla donde se use)
+  @Input() posicion = 'bottom-6 right-6'
+
   public abierto = false
   public guardando = false
   public cargandoClientes = false

@@ -15,4 +15,7 @@ export class LayoutComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  cerrarSesion() {
+    ['nombre', 'apellido', 'correo'].forEach(k => localStorage.removeItem(k))
+  }
 }
