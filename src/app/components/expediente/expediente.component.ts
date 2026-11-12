@@ -182,6 +182,20 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     })
   }
 
+  alElegirComprobante(c: Cobro, event: Event) {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+    input.value = ''
+    if (!file) return
+    if (file.size > 4 * 1024 * 1024) return this.toast.error('El comprobante supera el límite de 4 MB')
+    if (this.ocupado[c.id]) return
+    this.ocupado[c.id] = true
+    this.service.subirComprobante(c.id, file).subscribe({
+      next: () => { this.ocupado[c.id] = false; this.toast.success('Comprobante guardado'); this.cargarBilletera() },
+      error: (err) => { this.ocupado[c.id] = false; this.toast.error(err.error?.message?.trim() || 'No se pudo subir el comprobante') }
+    })
+  }
+
   eliminarCobro(c: Cobro) {
     if (!confirm(`¿Eliminar el cobro "${c.concepto}"?`)) return
     this.service.eliminarCobro(c.id).subscribe({

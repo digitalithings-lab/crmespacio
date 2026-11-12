@@ -56,6 +56,7 @@ export interface Cobro {
   metodo: string | null
   referencia: string | null
   factura_numero: string | null
+  comprobante: string | null
   factura_enviada: string | null
   recordatorio_enviado: string | null
   recordatorios: number
@@ -121,6 +122,11 @@ export class ServiceclientesService {
   }
   recordarCobro(id: number): Observable<any> {
     return this.http.post<any>(`${api}/cobros/${id}/recordatorio`, {})
+  }
+  subirComprobante(id: number, file: File): Observable<any> {
+    const form = new FormData()
+    form.append('archivo', file)
+    return this.http.post<any>(`${api}/cobros/${id}/comprobante`, form)
   }
   eliminarCobro(id: number): Observable<any> {
     return this.http.delete<any>(`${api}/cobros/${id}`)
