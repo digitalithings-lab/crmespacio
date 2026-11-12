@@ -42,6 +42,34 @@ export interface Archivo {
   cliente_grupo?: string | null
 }
 
+export interface Cobro {
+  id: number
+  idexpediente: string
+  concepto: string
+  monto: string | number
+  moneda: string
+  origen: string
+  codigo_sala: string | null
+  fecha_servicio: string | null
+  estado: 'pendiente' | 'pagado'
+  fecha_pago: string | null
+  metodo: string | null
+  referencia: string | null
+  factura_numero: string | null
+  factura_enviada: string | null
+  recordatorio_enviado: string | null
+  recordatorios: number
+  fecha_creacion: string
+}
+
+export interface ReunionSinCobro { codigo: string; nombre: string | null; fecha_creacion: string }
+
+export interface Billetera {
+  cobros: Cobro[]
+  reunionesSinCobro: ReunionSinCobro[]
+  resumen: { pagado: number; pendiente: number; moneda: string | null }
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -76,6 +104,26 @@ export class ServiceclientesService {
   }
   obtenerCliente(idexpediente: string): Observable<any> {
     return this.http.get<any>(`${api}/cliente/${idexpediente}`)
+  }
+
+  // ---- Billetera ----
+  obtenerBilletera(idexpediente: string): Observable<any> {
+    return this.http.get<any>(`${api}/billetera/${idexpediente}`)
+  }
+  crearCobro(data: any): Observable<any> {
+    return this.http.post<any>(`${api}/cobros`, data)
+  }
+  pagarCobro(id: number, data: { metodo?: string; referencia?: string }): Observable<any> {
+    return this.http.post<any>(`${api}/cobros/${id}/pagar`, data)
+  }
+  reenviarFactura(id: number): Observable<any> {
+    return this.http.post<any>(`${api}/cobros/${id}/factura`, {})
+  }
+  recordarCobro(id: number): Observable<any> {
+    return this.http.post<any>(`${api}/cobros/${id}/recordatorio`, {})
+  }
+  eliminarCobro(id: number): Observable<any> {
+    return this.http.delete<any>(`${api}/cobros/${id}`)
   }
 
   // ---- Notas ----

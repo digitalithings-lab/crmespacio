@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Archivo, Cliente, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
+import { Archivo, Billetera, Cliente, Cobro, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ServicesalaService } from 'src/app/services/servicesala.service';
 import { claseTipo, etiquetaTipo, nombreGrupo } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
-type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones'
+type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones' | 'billetera'
 
 @Component({
   selector: 'app-expediente',
@@ -33,6 +33,17 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   public creandoSala = false
   public nombreSala = ''
 
+  // Billetera
+  public billetera: Billetera | null = null
+  public cargandoBilletera = true
+  public correoConfigurado = true
+  public formCobro = { concepto: '', monto: '', moneda: 'USD', codigo_sala: '' }
+  public creandoCobro = false
+  public cobroPagando: Cobro | null = null   // cobro cuyo formulario de pago está abierto
+  public formPago = { metodo: '', referencia: '' }
+  public ocupado: { [id: number]: boolean } = {}
+  public metodos = ['Efectivo', 'Transferencia', 'Tarjeta', 'Otro']
+
   private sub?: Subscription
 
   constructor(
@@ -50,6 +61,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     this.cargarNotas()
     this.cargarArchivos()
     this.cargarSalas()
+    this.cargarBilletera()
     this.sub = this.service.notasActualizadas$.subscribe(() => this.cargarNotas())
   }
 
@@ -85,6 +97,112 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
       error: () => { this.cargandoSalas = false }
     })
   }
+
+  cargarBilletera() {
+    this.service.obtenerBilletera(this.id).subscribe({
+      next: (resp) => {
+        this.billetera = resp.data
+        this.correoConfigurado = resp.correoConfigurado !== false
+        this.cargandoBilletera = false
+      },
+      error: (err) => {
+        this.cargandoBilletera = false
+        this.toast.error(err.error?.message?.trim() || 'No se pudo cargar la billetera')
+      }
+    })
+  }
+
+  // Elegir una reunión sin cobro precarga el concepto
+  alElegirReunion() {
+    const r = this.billetera?.reunionesSinCobro.find(x => x.codigo === this.formCobro.codigo_sala)
+    if (r && !this.formCobro.concepto.trim()) this.formCobro.concepto = r.nombre || 'Reunión'
+  }
+
+  crearCobro() {
+    const f = this.formCobro
+    const monto = Number(f.monto)
+    if (!monto || monto <= 0) return this.toast.error('Escribe un monto mayor que 0')
+    if (!f.concepto.trim() && !f.codigo_sala) return this.toast.error('Escribe el concepto del cobro')
+    if (this.creandoCobro) return
+    this.creandoCobro = true
+    this.service.crearCobro({
+      idexpediente: this.id, concepto: f.concepto.trim(), monto,
+      moneda: f.moneda.trim().toUpperCase(), codigo_sala: f.codigo_sala || undefined
+    }).subscribe({
+      next: () => {
+        this.creandoCobro = false
+        this.formCobro = { ...this.formCobro, concepto: '', monto: '', codigo_sala: '' }
+        this.toast.success('Cobro creado')
+        this.cargarBilletera()
+      },
+      error: (err) => {
+        this.creandoCobro = false
+        this.toast.error(err.error?.message?.trim() || 'No se pudo crear el cobro')
+      }
+    })
+  }
+
+  abrirPago(c: Cobro) {
+    this.cobroPagando = this.cobroPagando?.id === c.id ? null : c
+    this.formPago = { metodo: '', referencia: '' }
+  }
+
+  confirmarPago(c: Cobro) {
+    if (this.ocupado[c.id]) return
+    this.ocupado[c.id] = true
+    this.service.pagarCobro(c.id, this.formPago).subscribe({
+      next: (resp) => {
+        this.ocupado[c.id] = false
+        this.cobroPagando = null
+        this.avisoCorreo(resp.correo, 'Factura enviada al correo del cliente')
+        this.cargarBilletera()
+      },
+      error: (err) => {
+        this.ocupado[c.id] = false
+        this.toast.error(err.error?.message?.trim() || 'No se pudo registrar el pago')
+      }
+    })
+  }
+
+  recordar(c: Cobro) {
+    if (this.ocupado[c.id]) return
+    this.ocupado[c.id] = true
+    this.service.recordarCobro(c.id).subscribe({
+      next: () => { this.ocupado[c.id] = false; this.toast.success('Recordatorio enviado al correo del cliente'); this.cargarBilletera() },
+      error: (err) => { this.ocupado[c.id] = false; this.toast.error(err.error?.message?.trim() || 'No se pudo enviar el recordatorio') }
+    })
+  }
+
+  reenviar(c: Cobro) {
+    if (this.ocupado[c.id]) return
+    this.ocupado[c.id] = true
+    this.service.reenviarFactura(c.id).subscribe({
+      next: (resp) => { this.ocupado[c.id] = false; this.avisoCorreo(resp.correo, 'Factura reenviada'); this.cargarBilletera() },
+      error: (err) => { this.ocupado[c.id] = false; this.toast.error(err.error?.message?.trim() || 'No se pudo reenviar la factura') }
+    })
+  }
+
+  eliminarCobro(c: Cobro) {
+    if (!confirm(`¿Eliminar el cobro "${c.concepto}"?`)) return
+    this.service.eliminarCobro(c.id).subscribe({
+      next: () => { this.toast.success('Cobro eliminado'); this.cargarBilletera() },
+      error: (err) => this.toast.error(err.error?.message?.trim() || 'No se pudo eliminar el cobro')
+    })
+  }
+
+  private avisoCorreo(resultado: string, textoOk: string) {
+    if (resultado === 'enviado') this.toast.success(textoOk)
+    else if (resultado === 'sin_correo') this.toast.error('Pago registrado, pero el cliente no tiene correo')
+    else if (resultado === 'no_configurado') this.toast.error('Pago registrado. El envío de correos no está configurado en el servidor')
+    else this.toast.error('Pago registrado, pero no se pudo enviar el correo')
+  }
+
+  dinero(monto: number | string, moneda: string) {
+    try { return new Intl.NumberFormat('es', { style: 'currency', currency: moneda }).format(Number(monto)) }
+    catch { return `${Number(monto).toFixed(2)} ${moneda}` }
+  }
+
+  get pendientes(): number { return this.billetera?.cobros.filter(c => c.estado === 'pendiente').length ?? 0 }
 
   crearReunion() {
     if (this.creandoSala) return
