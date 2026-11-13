@@ -224,7 +224,8 @@ export class AgendaComponent implements OnInit {
     return {
       modo: 'existente' as 'existente' | 'nuevo', idexpediente: null as string | null, tipo: 'INDIVIDUAL' as 'INDIVIDUAL' | 'COUPLE' | 'CHILD',
       p1: persona(), p2: persona(), fecha: '', hora: '', fuera: false, slot: '' as string,
-      modalidad: 'VIDEO' as 'VIDEO' | 'IN_PERSON', motivo: '', confirmar: true, enlace: ''
+      modalidad: 'VIDEO' as 'VIDEO' | 'IN_PERSON', motivo: '', confirmar: true, enlace: '',
+      repetir: 'none' as 'none' | 'weekly' | 'biweekly' | 'manual', veces: 4, extras: [] as { fecha: string; hora: string }[]
     }
   }
 
@@ -271,6 +272,9 @@ export class AgendaComponent implements OnInit {
     })
   }
 
+  agregarExtra() { if (this.formNueva.extras.length < 11) this.formNueva.extras.push({ fecha: '', hora: '' }) }
+  quitarExtra(i: number) { this.formNueva.extras.splice(i, 1) }
+
   cargarSlots() {
     const f = this.formNueva
     f.slot = ''
@@ -296,16 +300,32 @@ export class AgendaComponent implements OnInit {
       if (!f.slot) return this.toast.error('Elige una hora libre o marca "Fuera del horario de atención"')
       inicia = f.slot
     }
+    // Repetición
+    let recurrencia: any, fechasExtra: string[] | undefined
+    if (f.repetir === 'weekly' || f.repetir === 'biweekly') {
+      const n = Number(f.veces)
+      if (!Number.isInteger(n) || n < 2 || n > 12) return this.toast.error('La repetición debe ser de 2 a 12 citas')
+      recurrencia = { rule: f.repetir, count: n }
+    } else if (f.repetir === 'manual') {
+      fechasExtra = []
+      for (const e of f.extras) {
+        if (!e.fecha || !e.hora) return this.toast.error('Completa la fecha y la hora de cada día adicional')
+        fechasExtra.push(new Date(`${e.fecha}T${e.hora}`).toISOString())
+      }
+      if (!fechasExtra.length) return this.toast.error('Agrega al menos un día adicional o cambia a "Una sola cita"')
+    }
     this.creandoCita = true
     this.service.crearCita({
-      inicia, fueraDeHorario: f.fuera, modalidad: f.modalidad, tipo: f.tipo, motivo: f.motivo.trim() || undefined,
+      inicia, fueraDeHorario: f.fuera, modalidad: f.modalidad, tipo: f.tipo, motivo: f.motivo.trim() || undefined, recurrencia, fechasExtra,
       ...f.p1, pareja: f.tipo === 'COUPLE' ? f.p2 : undefined,
       confirmar: f.confirmar, meetingUrl: f.confirmar && f.modalidad === 'VIDEO' ? f.enlace.trim() || undefined : undefined
     }).subscribe({
       next: (resp) => {
         this.creandoCita = false
         this.nueva = false
-        this.toast.success(f.confirmar ? 'Cita creada y confirmada' : 'Cita creada')
+        const n = resp.cantidad ?? 1
+        this.toast.success(n > 1 ? `${n} citas creadas${f.confirmar ? ' y confirmadas' : ''}` : (f.confirmar ? 'Cita creada y confirmada' : 'Cita creada'))
+        if (resp.omitidas > 0) this.toast.error(`${resp.omitidas} fecha${resp.omitidas === 1 ? '' : 's'} se omitieron por estar ocupadas o fuera de horario`)
         if (resp.cliente === 'error') this.toast.error('No se pudo registrar al cliente. Abre la cita y usa "Reintentar registro".')
         this.avisoCorreoCita(resp.correo)
         const d = new Date(inicia)
