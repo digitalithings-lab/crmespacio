@@ -48,6 +48,14 @@ export class AgendaComponent implements OnInit {
   public ocupado = false
   public registrando = false
 
+  // ---- Acciones sobre la cita ----
+  public enlaceConfirmacion = ''
+  public cancelando = false
+  public motivoCancelacion = ''
+  public editandoEnlace = false
+  public enlaceEdicion = ''
+  public actuando = false
+
   constructor(private service: ServiceclientesService, private toast: ToastService) { }
 
   ngOnInit(): void { this.cargar() }
@@ -129,6 +137,10 @@ export class AgendaComponent implements OnInit {
   // ---- Detalle de la cita ----
   abrir(c: CitaAgenda) {
     this.abierta = c
+    this.cancelando = false
+    this.editandoEnlace = false
+    this.enlaceConfirmacion = ''
+    this.motivoCancelacion = ''
     this.pagando = false
     this.formPago = { metodo: '', referencia: '' }
     this.montoCobro = String(c.priceCents / 100)
@@ -198,6 +210,51 @@ export class AgendaComponent implements OnInit {
       error: (err) => { this.guardando = false; this.toast.error(err.error?.message?.trim() || 'No se pudieron guardar los datos') }
     })
   }
+
+  // ---- Confirmar, cancelar y cerrar citas ----
+  yaEmpezo(c: CitaAgenda): boolean { return new Date(c.startsAt) <= new Date() }
+
+  private llamar(c: CitaAgenda, cuerpo: any, exito: string) {
+    if (this.actuando) return
+    this.actuando = true
+    this.service.actuarCita(c.id, cuerpo).subscribe({
+      next: (resp) => {
+        this.actuando = false
+        this.cancelando = false
+        this.editandoEnlace = false
+        this.motivoCancelacion = ''
+        this.toast.success(exito)
+        if (resp.cliente === 'error') this.toast.error('No se pudo registrar al cliente. Usa "Reintentar registro".')
+        else if (resp.cobro === 'creado') this.toast.success('Cobro de la cita creado en la billetera')
+        this.avisoCorreoCita(resp.correo)
+        this.cargar()
+      },
+      error: (err) => { this.actuando = false; this.toast.error(err.error?.message?.trim() || 'No se pudo completar la acción') }
+    })
+  }
+
+  private avisoCorreoCita(resultado?: string) {
+    if (resultado === 'enviado') this.toast.success('Correo enviado a la persona')
+    else if (resultado === 'sin_correo') this.toast.error('La persona no tiene un correo válido: no se envió el correo')
+    else if (resultado === 'no_configurado') this.toast.error('El envío de correos no está configurado en el servidor')
+    else if (resultado === 'error') this.toast.error('No se pudo enviar el correo')
+  }
+
+  confirmarCita(c: CitaAgenda) {
+    this.llamar(c, { action: 'confirm', meetingUrl: this.enlaceConfirmacion.trim() || undefined }, 'Cita confirmada')
+    this.enlaceConfirmacion = ''
+  }
+  cancelarCita(c: CitaAgenda) {
+    if (this.motivoCancelacion.trim().length < 5) return this.toast.error('Escribe el motivo de la cancelación (al menos 5 caracteres)')
+    this.llamar(c, { action: 'cancel', cancelReason: this.motivoCancelacion.trim() }, 'Cita cancelada')
+  }
+  cerrarCita(c: CitaAgenda, accion: 'complete' | 'no_show') {
+    this.llamar(c, { action: accion }, accion === 'complete' ? 'Cita completada' : 'Marcada como no asistió')
+  }
+  reenviarConfirmacion(c: CitaAgenda) { this.llamar(c, { action: 'resend' }, 'Confirmación reenviada') }
+  reintentarRegistro(c: CitaAgenda) { this.llamar(c, { action: 'sync' }, 'Cliente y cobro listos') }
+  abrirEdicionEnlace(c: CitaAgenda) { this.editandoEnlace = true; this.enlaceEdicion = c.meetingUrl ?? '' }
+  guardarEnlace(c: CitaAgenda) { this.llamar(c, { action: 'update', meetingUrl: this.enlaceEdicion.trim() }, 'Enlace guardado') }
 
   // ---- Registrar en el CRM a quien aún no está ----
   faltanEnCrm(c: CitaAgenda): boolean { return this.personas(c).some(p => !p.enCrm) }

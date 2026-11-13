@@ -9,6 +9,7 @@ import { ExpedienteComponent } from './components/expediente/expediente.componen
 import { ReunionesComponent } from './components/reuniones/reuniones.component';
 import { SalaComponent } from './components/sala/sala.component';
 import { AgendaComponent } from './components/agenda/agenda.component';
+import { AgendaAjustesComponent } from './components/agenda-ajustes/agenda-ajustes.component';
 import { NotasComponent } from './components/notas/notas.component';
 import { BibliotecaComponent } from './components/biblioteca/biblioteca.component';
 
@@ -24,6 +25,7 @@ const routes: Routes = [
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'agenda', component: AgendaComponent },
+      { path: 'agenda/ajustes', component: AgendaAjustesComponent },
       { path: 'clientes', component: ClientesComponent },
       { path: 'clientes/:id', component: ExpedienteComponent },
       { path: 'notas', component: NotasComponent },

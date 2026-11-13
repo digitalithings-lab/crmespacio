@@ -84,6 +84,7 @@ export interface CitaAgenda {
   priceCents: number
   currency: string
   paid: boolean
+  cancelReason?: string | null
   patient: { fullName: string | null; idNumber: string | null; age: number | null; email: string | null; phone: string | null }
   partner: { fullName: string | null; idNumber: string | null; age?: number | null; email: string | null; phone: string | null } | null
   cliente1: Cliente | null
@@ -138,6 +139,26 @@ export class ServiceclientesService {
   }
   editarCliente(idexpediente: string, data: any): Observable<any> {
     return this.http.patch<any>(`${api}/cliente/${idexpediente}`, data)
+  }
+
+  // ---- Citas (confirmar, cancelar…) y ajustes de la agenda ----
+  actuarCita(id: string, data: any): Observable<any> {
+    return this.http.patch<any>(`${api}/agenda/citas/${id}`, data)
+  }
+  obtenerAjustes(): Observable<any> {
+    return this.http.get<any>(`${api}/agenda/ajustes`)
+  }
+  guardarConfigAgenda(data: any): Observable<any> {
+    return this.http.put<any>(`${api}/agenda/ajustes/config`, data)
+  }
+  guardarHorarios(reglas: any[]): Observable<any> {
+    return this.http.put<any>(`${api}/agenda/ajustes/horarios`, { reglas })
+  }
+  crearBloqueo(data: any): Observable<any> {
+    return this.http.post<any>(`${api}/agenda/ajustes/bloqueos`, data)
+  }
+  quitarBloqueo(id: string | number): Observable<any> {
+    return this.http.delete<any>(`${api}/agenda/ajustes/bloqueos/${id}`)
   }
 
   // ---- Billetera ----

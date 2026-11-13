@@ -19,6 +19,7 @@ import { ExpedienteComponent } from './components/expediente/expediente.componen
 import { NotaFlotanteComponent } from './components/nota-flotante/nota-flotante.component';
 import { ReunionesComponent } from './components/reuniones/reuniones.component';
 import { AgendaComponent } from './components/agenda/agenda.component';
+import { AgendaAjustesComponent } from './components/agenda-ajustes/agenda-ajustes.component';
 import { SalaComponent } from './components/sala/sala.component';
 
 registerLocaleData(localeEs)
@@ -39,6 +40,7 @@ registerLocaleData(localeEs)
     ReunionesComponent,
     SalaComponent,
     AgendaComponent,
+    AgendaAjustesComponent,
   ],
   imports: [
     BrowserModule,

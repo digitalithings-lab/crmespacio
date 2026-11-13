@@ -1,9 +1,10 @@
 <div class="flex flex-wrap items-center justify-between gap-3">
   <div>
     <h1 class="text-2xl font-extrabold tracking-tight">Agenda</h1>
-    <p class="mt-1 text-sm text-zinc-500">Las citas de Florece. Toca un día para ver sus citas y una cita para ver al cliente y su billetera.</p>
+    <p class="mt-1 text-sm text-zinc-500">Las citas que llegan de tu sitio web. Toca un día para ver sus citas y una cita para ver al cliente y su billetera.</p>
   </div>
   <div class="flex items-center gap-2">
+    <a routerLink="/agenda/ajustes" class="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95"><i class="ph ph-sliders-horizontal"></i> Horarios y precio</a>
     <button type="button" (click)="hoy()" class="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95">Hoy</button>
     <div class="flex items-center rounded-xl border border-zinc-200 bg-white">
       <button type="button" (click)="mover(-1)" aria-label="Mes anterior" class="flex h-10 w-10 items-center justify-center rounded-l-xl text-zinc-600 transition hover:bg-zinc-50"><i class="ph ph-caret-left text-lg"></i></button>
@@ -96,6 +97,52 @@
         <a *ngIf="c.meetingUrl" [attr.href]="c.meetingUrl" target="_blank" rel="noopener" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"><i class="ph ph-video-camera"></i> Abrir enlace de la videollamada</a>
         <p *ngIf="c.note" class="mt-3 whitespace-pre-line text-sm text-zinc-600"><span class="font-semibold text-zinc-800">Motivo:</span> {{ c.note }}</p>
       </section>
+
+      <!-- Acciones de la cita -->
+      <section *ngIf="c.status === 'REQUESTED' || c.status === 'CONFIRMED'" class="rounded-2xl border border-zinc-200 bg-white p-4">
+        <h3 class="mb-3 flex items-center gap-2 text-sm font-bold"><i class="ph ph-lightning text-lg text-brand-700"></i> Acciones</h3>
+
+        <!-- Solicitada: confirmar -->
+        <div *ngIf="c.status === 'REQUESTED'">
+          <p class="text-xs text-zinc-500">Al confirmar se registra al cliente (si no existe), se crea el cobro y se le envía el correo de confirmación{{ c.modality === 'VIDEO' ? ' con su enlace de videollamada' : '' }}.</p>
+          <div *ngIf="c.modality === 'VIDEO'" class="mt-3">
+            <label for="a-enlace" class="mb-1.5 block text-xs font-semibold text-zinc-500">Enlace de la videollamada <span class="font-normal text-zinc-400">(opcional: si lo dejas vacío se crea una sala del CRM)</span></label>
+            <input id="a-enlace" name="a-enlace" [(ngModel)]="enlaceConfirmacion" type="url" placeholder="https://…" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm placeholder:text-zinc-400 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+          </div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button type="button" (click)="confirmarCita(c)" [disabled]="actuando" class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-60"><i class="ph" [ngClass]="actuando ? 'ph-spinner animate-spin' : 'ph-check-circle'"></i> Confirmar cita</button>
+            <button type="button" (click)="cancelando = !cancelando" class="rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95">Rechazar</button>
+          </div>
+        </div>
+
+        <!-- Confirmada -->
+        <div *ngIf="c.status === 'CONFIRMED'" class="flex flex-wrap gap-2">
+          <ng-container *ngIf="yaEmpezo(c)">
+            <button type="button" (click)="cerrarCita(c, 'complete')" [disabled]="actuando" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700 active:scale-95 disabled:opacity-60"><i class="ph ph-check-circle"></i> Marcar completada</button>
+            <button type="button" (click)="cerrarCita(c, 'no_show')" [disabled]="actuando" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95 disabled:opacity-60"><i class="ph ph-user-minus"></i> No asistió</button>
+          </ng-container>
+          <button type="button" (click)="reenviarConfirmacion(c)" [disabled]="actuando" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95 disabled:opacity-60"><i class="ph ph-paper-plane-tilt"></i> Reenviar confirmación</button>
+          <button *ngIf="c.modality === 'VIDEO'" type="button" (click)="abrirEdicionEnlace(c)" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95"><i class="ph ph-link"></i> Cambiar enlace</button>
+          <button type="button" (click)="reintentarRegistro(c)" [disabled]="actuando" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95 disabled:opacity-60"><i class="ph ph-arrows-clockwise"></i> Reintentar registro</button>
+          <button type="button" (click)="cancelando = !cancelando" class="rounded-lg px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-50">Cancelar cita</button>
+        </div>
+
+        <div *ngIf="editandoEnlace" class="animate-fade-up mt-3 flex gap-2">
+          <input name="a-enlace2" [(ngModel)]="enlaceEdicion" type="url" placeholder="https://…" aria-label="Enlace de la videollamada" class="min-w-0 flex-1 rounded-xl border border-zinc-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+          <button type="button" (click)="guardarEnlace(c)" [disabled]="actuando" class="rounded-lg bg-brand-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-800 active:scale-95 disabled:opacity-60">Guardar</button>
+        </div>
+
+        <div *ngIf="cancelando" class="animate-fade-up mt-3 rounded-xl bg-red-50 p-3">
+          <label for="a-motivo" class="mb-1.5 block text-xs font-semibold text-red-800">Motivo de la cancelación (la persona lo verá en su correo)</label>
+          <textarea id="a-motivo" name="a-motivo" [(ngModel)]="motivoCancelacion" rows="3" maxlength="500" class="w-full resize-none rounded-xl border border-red-200 bg-white px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-4 focus:ring-red-200/50"></textarea>
+          <div class="mt-2 flex gap-2">
+            <button type="button" (click)="cancelarCita(c)" [disabled]="actuando" class="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-red-700 active:scale-95 disabled:opacity-60"><i class="ph" [ngClass]="actuando ? 'ph-spinner animate-spin' : 'ph-x-circle'"></i> Confirmar cancelación</button>
+            <button type="button" (click)="cancelando = false" class="rounded-lg px-3 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900">Volver</button>
+          </div>
+        </div>
+      </section>
+
+      <p *ngIf="c.status === 'CANCELLED' && c.cancelReason" class="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><span class="font-semibold">Cancelada:</span> {{ c.cancelReason }}</p>
 
       <!-- Cliente -->
       <section>
