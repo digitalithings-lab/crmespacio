@@ -17,7 +17,7 @@ interface Participante {
   reintentando: boolean
 }
 
-type Fase = 'cargando' | 'noexiste' | 'lobby' | 'llamada' | 'fin'
+type Fase = 'cargando' | 'noexiste' | 'expirada' | 'lobby' | 'llamada' | 'fin'
 
 @Component({
   selector: 'app-sala',
@@ -89,7 +89,7 @@ export class SalaComponent implements OnInit, OnDestroy {
         this.fase = 'lobby'
         this.iniciarVistaPrevia()
       },
-      error: () => { this.fase = 'noexiste' }
+      error: (err) => { this.fase = err?.status === 410 ? 'expirada' : 'noexiste' }
     })
   }
 
@@ -110,6 +110,8 @@ export class SalaComponent implements OnInit, OnDestroy {
   // ================= Cámara y micrófono =================
   private async iniciarVistaPrevia() {
     const intentos: MediaStreamConstraints[] = [
+      { video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 }, facingMode: 'user' }, audio: this.audioConstraints },
+      // Si la cámara no da HD, se acepta lo que tenga
       { video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24, max: 30 }, facingMode: 'user' }, audio: this.audioConstraints },
       { video: false, audio: this.audioConstraints },
       { video: true, audio: false }
@@ -367,7 +369,9 @@ export class SalaComponent implements OnInit, OnDestroy {
       try {
         const parametros = sender.getParameters()
         if (!parametros.encodings?.length) parametros.encodings = [{}]
-        parametros.encodings[0].maxBitrate = 800_000
+        // HD (720p se ve bien con 1.5 Mbps). Con más personas se reparte el ancho de banda: cada una envía a todas
+        const otros = Math.max(1, this.participantes.length)
+        parametros.encodings[0].maxBitrate = otros === 1 ? 1_500_000 : otros === 2 ? 1_000_000 : 600_000
         await sender.setParameters(parametros)
       } catch { /* el navegador no lo permite: se deja como está */ }
     }

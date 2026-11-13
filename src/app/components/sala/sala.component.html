@@ -12,6 +12,13 @@
     <p class="mt-2 max-w-sm text-sm text-zinc-400">Revisa que el enlace esté completo o pide que te envíen uno nuevo.</p>
   </div>
 
+  <!-- Expirada -->
+  <div *ngIf="fase === 'expirada'" class="animate-fade-up flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
+    <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white/10"><i class="ph ph-clock-countdown text-3xl"></i></span>
+    <h1 class="mt-6 text-2xl font-extrabold">Esta reunión ya expiró</h1>
+    <p class="mt-2 max-w-sm text-sm text-zinc-400">Los enlaces dejan de servir pasadas 3 horas. Pide que te envíen uno nuevo.</p>
+  </div>
+
   <!-- Salida -->
   <div *ngIf="fase === 'fin'" class="animate-fade-up flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
     <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white/10"><i class="ph ph-phone-disconnect text-3xl"></i></span>
