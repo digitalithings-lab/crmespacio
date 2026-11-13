@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { CitaAgenda, Cobro, ServiceclientesService } from 'src/app/services/serviceclientes.service';
-import { claseTipo, etiquetaTipo } from 'src/app/utils/tipos';
+import { CitaAgenda, Cliente, Cobro, ServiceclientesService } from 'src/app/services/serviceclientes.service';
+import { claseTipo, etiquetaTipo, opcionesCliente } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
 interface Dia { fecha: Date; clave: string; delMes: boolean; hoy: boolean; citas: CitaAgenda[] }
@@ -147,7 +147,7 @@ export class AgendaComponent implements OnInit {
   }
 
   @HostListener('document:keydown.escape')
-  cerrar() { this.abierta = null }
+  cerrar() { this.abierta = null; if (!this.creandoCita) this.nueva = false }
 
   // Se calcula una vez por cita (la cita se reemplaza al recargar la agenda): así la lista es estable entre ciclos
   private cachePersonas = new WeakMap<CitaAgenda, any[]>()
@@ -208,6 +208,112 @@ export class AgendaComponent implements OnInit {
     }).subscribe({
       next: () => { this.guardando = false; this.editando = null; this.toast.success('Datos guardados'); this.cargar() },
       error: (err) => { this.guardando = false; this.toast.error(err.error?.message?.trim() || 'No se pudieron guardar los datos') }
+    })
+  }
+
+  // ---- Crear una cita a mano ----
+  public nueva = false
+  public creandoCita = false
+  public clientesLista: Cliente[] = []
+  public cargandoSlots = false
+  public slotsDia: { startsAt: string; label: string }[] = []
+  public formNueva = this.formVacio()
+
+  private formVacio() {
+    const persona = () => ({ nombre: '', cedula: '', correo: '', telefono: '', nacimiento: '' })
+    return {
+      modo: 'existente' as 'existente' | 'nuevo', idexpediente: null as string | null, tipo: 'INDIVIDUAL' as 'INDIVIDUAL' | 'COUPLE' | 'CHILD',
+      p1: persona(), p2: persona(), fecha: '', hora: '', fuera: false, slot: '' as string,
+      modalidad: 'VIDEO' as 'VIDEO' | 'IN_PERSON', motivo: '', confirmar: true, enlace: ''
+    }
+  }
+
+  get opcionesClientes() { return opcionesCliente(this.clientesLista) }
+
+  abrirNueva() {
+    this.formNueva = this.formVacio()
+    this.formNueva.fecha = this.seleccionado
+    this.slotsDia = []
+    this.nueva = true
+    this.cargarSlots()
+    if (!this.clientesLista.length) {
+      this.service.listarClientes().subscribe({ next: (r) => { this.clientesLista = r.data ?? [] }, error: () => { } })
+    }
+  }
+
+  cambiarModo(modo: 'existente' | 'nuevo') {
+    const f = this.formNueva
+    f.modo = modo
+    if (modo === 'nuevo') { f.idexpediente = null }
+  }
+
+  elegirCliente(idexpediente: string | null) {
+    const f = this.formNueva
+    f.idexpediente = idexpediente
+    if (!idexpediente) return
+    this.service.obtenerCliente(idexpediente).subscribe({
+      next: (r) => {
+        const c: Cliente = r.data
+        const gente = c.integrantes?.length ? c.integrantes : [c]
+        const limpio = (p: Cliente) => ({
+          nombre: `${p.nombre} ${p.apellido === '-' ? '' : p.apellido}`.trim(),
+          cedula: p.cedula?.startsWith('PEND-') ? '' : (p.cedula ?? ''),
+          correo: p.correo?.endsWith('.invalid') ? '' : (p.correo ?? ''),
+          telefono: (p.telefono ?? '').trim() === '-' ? '' : (p.telefono ?? ''),
+          nacimiento: ''
+        })
+        f.p1 = limpio(gente[0])
+        if (gente[1]) f.p2 = limpio(gente[1])
+        const t = (c.tipo ?? '').toLowerCase()
+        f.tipo = gente.length > 1 || t === 'pareja' ? 'COUPLE' : t.startsWith('ni') ? 'CHILD' : 'INDIVIDUAL'
+      },
+      error: () => this.toast.error('No se pudieron cargar los datos del cliente')
+    })
+  }
+
+  cargarSlots() {
+    const f = this.formNueva
+    f.slot = ''
+    if (!f.fecha || f.fuera) { this.slotsDia = []; return }
+    this.cargandoSlots = true
+    this.service.horariosLibres(f.fecha, 1).subscribe({
+      next: (r) => { this.slotsDia = r.data?.days?.[0]?.slots ?? []; this.cargandoSlots = false },
+      error: (err) => { this.slotsDia = []; this.cargandoSlots = false; this.toast.error(err.error?.message?.trim() || 'No se pudieron cargar las horas libres') }
+    })
+  }
+
+  crearCita() {
+    if (this.creandoCita) return
+    const f = this.formNueva
+    if (f.modo === 'existente' && !f.idexpediente) return this.toast.error('Elige un cliente o cambia a "Cliente nuevo"')
+    if (!f.p1.nombre.trim()) return this.toast.error('Escribe el nombre del cliente')
+    if (f.tipo === 'COUPLE' && !f.p2.nombre.trim()) return this.toast.error('Escribe el nombre de la pareja')
+    let inicia = ''
+    if (f.fuera) {
+      if (!f.fecha || !f.hora) return this.toast.error('Elige la fecha y la hora de la cita')
+      inicia = new Date(`${f.fecha}T${f.hora}`).toISOString()
+    } else {
+      if (!f.slot) return this.toast.error('Elige una hora libre o marca "Fuera del horario de atención"')
+      inicia = f.slot
+    }
+    this.creandoCita = true
+    this.service.crearCita({
+      inicia, fueraDeHorario: f.fuera, modalidad: f.modalidad, tipo: f.tipo, motivo: f.motivo.trim() || undefined,
+      ...f.p1, pareja: f.tipo === 'COUPLE' ? f.p2 : undefined,
+      confirmar: f.confirmar, meetingUrl: f.confirmar && f.modalidad === 'VIDEO' ? f.enlace.trim() || undefined : undefined
+    }).subscribe({
+      next: (resp) => {
+        this.creandoCita = false
+        this.nueva = false
+        this.toast.success(f.confirmar ? 'Cita creada y confirmada' : 'Cita creada')
+        if (resp.cliente === 'error') this.toast.error('No se pudo registrar al cliente. Abre la cita y usa "Reintentar registro".')
+        this.avisoCorreoCita(resp.correo)
+        const d = new Date(inicia)
+        this.mes = new Date(d.getFullYear(), d.getMonth(), 1)
+        this.seleccionado = clave(d)
+        this.cargar()
+      },
+      error: (err) => { this.creandoCita = false; this.toast.error(err.error?.message?.trim() || 'No se pudo crear la cita') }
     })
   }
 

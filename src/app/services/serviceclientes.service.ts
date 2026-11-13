@@ -145,6 +145,12 @@ export class ServiceclientesService {
   actuarCita(id: string, data: any): Observable<any> {
     return this.http.patch<any>(`${api}/agenda/citas/${id}`, data)
   }
+  crearCita(data: any): Observable<any> {
+    return this.http.post<any>(`${api}/agenda/citas`, data)
+  }
+  horariosLibres(desde: string, dias = 1): Observable<any> {
+    return this.http.get<any>(`${api}/agenda/horarios-libres`, { params: { desde, dias } })
+  }
   obtenerAjustes(): Observable<any> {
     return this.http.get<any>(`${api}/agenda/ajustes`)
   }

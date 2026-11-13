@@ -4,6 +4,7 @@
     <p class="mt-1 text-sm text-zinc-500">Las citas que llegan de tu sitio web. Toca un día para ver sus citas y una cita para ver al cliente y su billetera.</p>
   </div>
   <div class="flex items-center gap-2">
+    <button type="button" (click)="abrirNueva()" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 active:scale-95"><i class="ph ph-plus"></i> Nueva cita</button>
     <a routerLink="/agenda/ajustes" class="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95"><i class="ph ph-sliders-horizontal"></i> Horarios y precio</a>
     <button type="button" (click)="hoy()" class="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95">Hoy</button>
     <div class="flex items-center rounded-xl border border-zinc-200 bg-white">
@@ -270,4 +271,119 @@
       </section>
     </div>
   </aside>
+</div>
+
+<!-- Nueva cita manual -->
+<div *ngIf="nueva" class="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label="Nueva cita">
+  <div class="absolute inset-0 bg-zinc-900/40" (click)="cerrar()"></div>
+  <form (ngSubmit)="crearCita()" class="animate-fade-up relative flex max-h-[94dvh] w-full max-w-2xl flex-col rounded-t-3xl bg-white shadow-2xl sm:rounded-2xl">
+    <div class="flex items-center justify-between gap-3 border-b border-zinc-100 px-5 py-4">
+      <h2 class="text-lg font-extrabold tracking-tight">Nueva cita</h2>
+      <button type="button" (click)="nueva = false" aria-label="Cerrar" class="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100"><i class="ph ph-x text-lg"></i></button>
+    </div>
+
+    <div class="flex-1 space-y-6 overflow-y-auto px-5 py-5">
+      <!-- Cliente -->
+      <section>
+        <h3 class="mb-2 text-sm font-bold">1. Cliente</h3>
+        <div class="inline-flex rounded-xl bg-zinc-100 p-1 text-sm font-semibold">
+          <button type="button" (click)="cambiarModo('existente')" class="rounded-lg px-4 py-1.5 transition" [ngClass]="formNueva.modo === 'existente' ? 'bg-white shadow-sm' : 'text-zinc-500'">Cliente del CRM</button>
+          <button type="button" (click)="cambiarModo('nuevo')" class="rounded-lg px-4 py-1.5 transition" [ngClass]="formNueva.modo === 'nuevo' ? 'bg-white shadow-sm' : 'text-zinc-500'">Cliente nuevo</button>
+        </div>
+
+        <div *ngIf="formNueva.modo === 'existente'" class="mt-3">
+          <select name="n-cliente" [ngModel]="formNueva.idexpediente" (ngModelChange)="elegirCliente($event)" aria-label="Cliente" class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
+            <option [ngValue]="null" disabled>Selecciona un cliente</option>
+            <option *ngFor="let o of opcionesClientes" [ngValue]="o.valor">{{ o.etiqueta }}</option>
+          </select>
+        </div>
+
+        <div class="mt-3">
+          <label for="n-tipo" class="mb-1.5 block text-xs font-semibold text-zinc-500">Tipo de atención</label>
+          <select id="n-tipo" name="n-tipo" [(ngModel)]="formNueva.tipo" class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10 sm:w-64">
+            <option value="INDIVIDUAL">Atención individual</option>
+            <option value="COUPLE">Atención de pareja</option>
+            <option value="CHILD">Niños y adolescentes</option>
+          </select>
+        </div>
+
+        <div *ngIf="formNueva.modo === 'nuevo' || formNueva.idexpediente" class="mt-4 space-y-4">
+          <div *ngFor="let k of (formNueva.tipo === 'COUPLE' ? ['p1', 'p2'] : ['p1'])" class="rounded-xl border border-zinc-200 p-4">
+            <p *ngIf="formNueva.tipo === 'COUPLE'" class="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-400">{{ k === 'p1' ? 'Persona 1' : 'Pareja' }}</p>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="sm:col-span-2">
+                <label [for]="'n-nom-' + k" class="mb-1 block text-xs font-semibold text-zinc-500">Nombre completo</label>
+                <input [id]="'n-nom-' + k" [name]="'n-nom-' + k" [(ngModel)]="formNueva[k === 'p1' ? 'p1' : 'p2'].nombre" type="text" maxlength="120" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+              </div>
+              <div>
+                <label [for]="'n-ced-' + k" class="mb-1 block text-xs font-semibold text-zinc-500">Cédula <span class="font-normal text-zinc-400">(opcional)</span></label>
+                <input [id]="'n-ced-' + k" [name]="'n-ced-' + k" [(ngModel)]="formNueva[k === 'p1' ? 'p1' : 'p2'].cedula" type="text" maxlength="30" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+              </div>
+              <div>
+                <label [for]="'n-tel-' + k" class="mb-1 block text-xs font-semibold text-zinc-500">Teléfono <span class="font-normal text-zinc-400">(opcional)</span></label>
+                <input [id]="'n-tel-' + k" [name]="'n-tel-' + k" [(ngModel)]="formNueva[k === 'p1' ? 'p1' : 'p2'].telefono" type="tel" maxlength="20" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+              </div>
+              <div>
+                <label [for]="'n-cor-' + k" class="mb-1 block text-xs font-semibold text-zinc-500">Correo <span class="font-normal text-zinc-400">(para enviarle la confirmación)</span></label>
+                <input [id]="'n-cor-' + k" [name]="'n-cor-' + k" [(ngModel)]="formNueva[k === 'p1' ? 'p1' : 'p2'].correo" type="email" maxlength="150" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+              </div>
+              <div>
+                <label [for]="'n-nac-' + k" class="mb-1 block text-xs font-semibold text-zinc-500">Fecha de nacimiento <span class="font-normal text-zinc-400">(opcional)</span></label>
+                <input [id]="'n-nac-' + k" [name]="'n-nac-' + k" [(ngModel)]="formNueva[k === 'p1' ? 'p1' : 'p2'].nacimiento" type="date" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fecha y hora -->
+      <section>
+        <h3 class="mb-2 text-sm font-bold">2. Fecha y hora</h3>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label for="n-fecha" class="mb-1 block text-xs font-semibold text-zinc-500">Fecha</label>
+            <input id="n-fecha" name="n-fecha" [(ngModel)]="formNueva.fecha" (ngModelChange)="cargarSlots()" type="date" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+          </div>
+          <div *ngIf="formNueva.fuera">
+            <label for="n-hora" class="mb-1 block text-xs font-semibold text-zinc-500">Hora</label>
+            <input id="n-hora" name="n-hora" [(ngModel)]="formNueva.hora" type="time" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+          </div>
+        </div>
+
+        <div *ngIf="!formNueva.fuera" class="mt-3">
+          <p *ngIf="cargandoSlots" class="text-sm text-zinc-500"><i class="ph ph-spinner animate-spin"></i> Buscando horas libres…</p>
+          <p *ngIf="!cargandoSlots && formNueva.fecha && slotsDia.length === 0" class="text-sm text-zinc-500">No hay horas libres ese día. Prueba otra fecha o marca "Fuera del horario de atención".</p>
+          <div class="flex flex-wrap gap-2">
+            <button *ngFor="let s of slotsDia" type="button" (click)="formNueva.slot = s.startsAt" class="rounded-lg border px-3 py-1.5 text-sm font-semibold transition active:scale-95"
+              [ngClass]="formNueva.slot === s.startsAt ? 'border-brand-700 bg-brand-700 text-white' : 'border-zinc-200 text-zinc-700 hover:bg-zinc-50'">{{ s.label }}</button>
+          </div>
+        </div>
+
+        <label class="mt-3 flex items-center gap-2 text-sm"><input name="n-fuera" [(ngModel)]="formNueva.fuera" (ngModelChange)="cargarSlots()" type="checkbox" class="h-4 w-4 rounded border-zinc-300 text-brand-700 focus:ring-brand-600" /> Fuera del horario de atención (elegir la hora a mano)</label>
+      </section>
+
+      <!-- Detalles -->
+      <section>
+        <h3 class="mb-2 text-sm font-bold">3. Detalles</h3>
+        <div class="inline-flex rounded-xl bg-zinc-100 p-1 text-sm font-semibold">
+          <button type="button" (click)="formNueva.modalidad = 'VIDEO'" class="rounded-lg px-4 py-1.5 transition" [ngClass]="formNueva.modalidad === 'VIDEO' ? 'bg-white shadow-sm' : 'text-zinc-500'">Virtual</button>
+          <button type="button" (click)="formNueva.modalidad = 'IN_PERSON'" class="rounded-lg px-4 py-1.5 transition" [ngClass]="formNueva.modalidad === 'IN_PERSON' ? 'bg-white shadow-sm' : 'text-zinc-500'">Presencial</button>
+        </div>
+        <div class="mt-3">
+          <label for="n-motivo" class="mb-1 block text-xs font-semibold text-zinc-500">Motivo (opcional)</label>
+          <textarea id="n-motivo" name="n-motivo" [(ngModel)]="formNueva.motivo" rows="3" maxlength="500" class="w-full resize-none rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10"></textarea>
+        </div>
+        <label class="mt-3 flex items-start gap-2 text-sm"><input name="n-confirmar" [(ngModel)]="formNueva.confirmar" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-zinc-300 text-brand-700 focus:ring-brand-600" /> <span>Confirmar de una vez <span class="text-zinc-500">(registra al cliente, crea el cobro y le envía el correo de confirmación si tiene correo)</span></span></label>
+        <div *ngIf="formNueva.confirmar && formNueva.modalidad === 'VIDEO'" class="mt-3">
+          <label for="n-enlace" class="mb-1 block text-xs font-semibold text-zinc-500">Enlace de la videollamada <span class="font-normal text-zinc-400">(opcional: si lo dejas vacío se crea una sala del CRM)</span></label>
+          <input id="n-enlace" name="n-enlace" [(ngModel)]="formNueva.enlace" type="url" placeholder="https://…" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm placeholder:text-zinc-400 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+        </div>
+      </section>
+    </div>
+
+    <div class="flex justify-end gap-3 border-t border-zinc-100 px-5 py-4">
+      <button type="button" (click)="nueva = false" class="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50">Cancelar</button>
+      <button type="submit" [disabled]="creandoCita" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 active:scale-[0.98] disabled:opacity-60"><i class="ph" [ngClass]="creandoCita ? 'ph-spinner animate-spin' : 'ph-calendar-plus'"></i> {{ formNueva.confirmar ? 'Crear y confirmar' : 'Crear cita' }}</button>
+    </div>
+  </form>
 </div>
