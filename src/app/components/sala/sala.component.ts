@@ -369,9 +369,9 @@ export class SalaComponent implements OnInit, OnDestroy {
       try {
         const parametros = sender.getParameters()
         if (!parametros.encodings?.length) parametros.encodings = [{}]
-        // HD (720p se ve bien con 1.5 Mbps). Con más personas se reparte el ancho de banda: cada una envía a todas
+        // HD 720p con tope de 2.5 Mbps (es un máximo: si la red no da, el navegador baja solo). Con más personas se reparte el ancho de banda: cada una envía a todas
         const otros = Math.max(1, this.participantes.length)
-        parametros.encodings[0].maxBitrate = otros === 1 ? 1_500_000 : otros === 2 ? 1_000_000 : 600_000
+        parametros.encodings[0].maxBitrate = otros === 1 ? 2_500_000 : otros === 2 ? 1_500_000 : 800_000
         await sender.setParameters(parametros)
       } catch { /* el navegador no lo permite: se deja como está */ }
     }
