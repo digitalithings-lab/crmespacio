@@ -98,6 +98,15 @@ export interface CitaAgenda {
   cobro: Cobro | null
 }
 
+// ---- Formularios por cliente ----
+export type TipoCampo = 'texto' | 'parrafo' | 'numero' | 'fecha' | 'correo' | 'telefono' | 'opcion' | 'casillas' | 'sino' | 'archivo'
+export interface CampoForm { id?: string; tipo: TipoCampo; etiqueta: string; requerido: boolean; opciones?: string[]; ayuda?: string; max?: number }
+export interface Formulario {
+  id: string; idexpediente: string; titulo: string; descripcion: string | null; campos: CampoForm[]
+  estado: 'borrador' | 'abierto' | 'enviado' | 'cerrado' | 'vencido'
+  expira_en: string | null; respondido_en: string | null; fecha_creacion: string; url: string | null; archivos: number
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -116,19 +125,40 @@ export class ServiceclientesService {
 
   constructor(private http: HttpClient) { }
 
+  // ---- Caché "mostrar ya, actualizar después" ----
+  // Las listas se pintan al instante con lo último que se vio y se refrescan en segundo plano.
+  // Si el dato es muy reciente (menos de `ttlMs`) ni siquiera se vuelve a pedir. Cualquier cambio (crear, editar…) la vacía.
+  private cache = new Map<string, { t: number; v: any }>()
+
+  private swr<T>(clave: string, ttlMs: number, peticion: () => Observable<T>): Observable<T> {
+    return new Observable<T>(sub => {
+      const c = this.cache.get(clave)
+      if (c) sub.next(c.v)
+      if (c && Date.now() - c.t < ttlMs) { sub.complete(); return }
+      const s = peticion().subscribe({
+        next: v => { this.cache.set(clave, { t: Date.now(), v }); sub.next(v) },
+        error: e => { if (c) sub.complete(); else sub.error(e) },
+        complete: () => sub.complete()
+      })
+      return () => s.unsubscribe()
+    })
+  }
+
+  private cambio = <T>() => tap<T>(() => this.cache.clear())
+
   abrirNota() { this._abrirNota.next() }
 
   // ---- Dashboard ----
   obtenerResumen(): Observable<any> {
-    return this.http.get<any>(`${api}/resumen`)
+    return this.swr('resumen', 20_000, () => this.http.get<any>(`${api}/resumen`))
   }
 
   // ---- Clientes ----
   crearCliente(data: any): Observable<any> {
-    return this.http.post<any>(`${api}/crearcliente`, data)
+    return this.http.post<any>(`${api}/crearcliente`, data).pipe(this.cambio())
   }
   listarClientes(): Observable<any> {
-    return this.http.get<any>(`${api}/listarclientes`)
+    return this.swr('clientes', 20_000, () => this.http.get<any>(`${api}/listarclientes`))
   }
   obtenerCliente(idexpediente: string): Observable<any> {
     return this.http.get<any>(`${api}/cliente/${idexpediente}`)
@@ -140,18 +170,18 @@ export class ServiceclientesService {
   }
 
   registrarCita(data: any): Observable<any> {
-    return this.http.post<any>(`${api}/agenda/registrar`, data)
+    return this.http.post<any>(`${api}/agenda/registrar`, data).pipe(this.cambio())
   }
   editarCliente(idexpediente: string, data: any): Observable<any> {
-    return this.http.patch<any>(`${api}/cliente/${idexpediente}`, data)
+    return this.http.patch<any>(`${api}/cliente/${idexpediente}`, data).pipe(this.cambio())
   }
 
   // ---- Citas (confirmar, cancelar…) y ajustes de la agenda ----
   actuarCita(id: string, data: any): Observable<any> {
-    return this.http.patch<any>(`${api}/agenda/citas/${id}`, data)
+    return this.http.patch<any>(`${api}/agenda/citas/${id}`, data).pipe(this.cambio())
   }
   crearCita(data: any): Observable<any> {
-    return this.http.post<any>(`${api}/agenda/citas`, data)
+    return this.http.post<any>(`${api}/agenda/citas`, data).pipe(this.cambio())
   }
   horariosLibres(desde: string, dias = 1): Observable<any> {
     return this.http.get<any>(`${api}/agenda/horarios-libres`, { params: { desde, dias } })
@@ -172,15 +202,33 @@ export class ServiceclientesService {
     return this.http.delete<any>(`${api}/agenda/ajustes/bloqueos/${id}`)
   }
 
+  // ---- Formularios ----
+  crearFormulario(data: any): Observable<any> { return this.http.post<any>(`${api}/formularios`, data) }
+  listarFormularios(idexpediente: string): Observable<any> { return this.http.get<any>(`${api}/formularios/${idexpediente}`) }
+  generarUrlFormulario(id: string, dias: number): Observable<any> { return this.http.post<any>(`${api}/formularios/${id}/url`, { dias }) }
+  cerrarFormulario(id: string): Observable<any> { return this.http.post<any>(`${api}/formularios/${id}/cerrar`, {}) }
+  duplicarFormulario(id: string): Observable<any> { return this.http.post<any>(`${api}/formularios/${id}/duplicar`, {}) }
+  eliminarFormulario(id: string): Observable<any> { return this.http.delete<any>(`${api}/formularios/${id}`) }
+  respuestasFormulario(id: string): Observable<any> { return this.http.get<any>(`${api}/formularios/${id}/respuestas`) }
+  // Página pública
+  verFormularioPublico(token: string): Observable<any> { return this.http.get<any>(`${api}/f/${token}`) }
+  subirArchivoFormulario(token: string, campo: string, file: File): Observable<any> {
+    const form = new FormData()
+    form.append('campo', campo)
+    form.append('archivo', file)
+    return this.http.post<any>(`${api}/f/${token}/archivo`, form)
+  }
+  enviarFormulario(token: string, respuestas: any): Observable<any> { return this.http.post<any>(`${api}/f/${token}`, { respuestas, website: '' }) }
+
   // ---- Billetera ----
   obtenerBilletera(idexpediente: string): Observable<any> {
     return this.http.get<any>(`${api}/billetera/${idexpediente}`)
   }
   crearCobro(data: any): Observable<any> {
-    return this.http.post<any>(`${api}/cobros`, data)
+    return this.http.post<any>(`${api}/cobros`, data).pipe(this.cambio())
   }
   pagarCobro(id: number, data: { metodo?: string; referencia?: string }): Observable<any> {
-    return this.http.post<any>(`${api}/cobros/${id}/pagar`, data)
+    return this.http.post<any>(`${api}/cobros/${id}/pagar`, data).pipe(this.cambio())
   }
   reenviarFactura(id: number): Observable<any> {
     return this.http.post<any>(`${api}/cobros/${id}/factura`, {})
@@ -200,7 +248,7 @@ export class ServiceclientesService {
   // ---- Notas ----
   crearNota(data: any): Observable<any> {
     return this.http.post<any>(`${api}/crearnota`, data).pipe(
-      tap(() => this._notasActualizadas.next())
+      tap(() => { this.cache.clear(); this._notasActualizadas.next() })
     )
   }
   listarNotas(idexpediente?: string): Observable<any> {
@@ -211,7 +259,7 @@ export class ServiceclientesService {
   subirArchivo(idexpediente: string, archivo: File): Observable<any> {
     const form = new FormData()
     form.append('archivo', archivo)
-    return this.http.post<any>(`${api}/subirarchivo/${idexpediente}`, form)
+    return this.http.post<any>(`${api}/subirarchivo/${idexpediente}`, form).pipe(this.cambio())
   }
   listarArchivos(idexpediente?: string): Observable<any> {
     return this.http.get<any>(idexpediente ? `${api}/archivos/${idexpediente}` : `${api}/archivos`)

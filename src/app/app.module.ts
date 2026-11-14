@@ -21,6 +21,7 @@ import { ReunionesComponent } from './components/reuniones/reuniones.component';
 import { AgendaComponent } from './components/agenda/agenda.component';
 import { AgendaAjustesComponent } from './components/agenda-ajustes/agenda-ajustes.component';
 import { RecordatoriosComponent } from './components/recordatorios/recordatorios.component';
+import { FormularioPublicoComponent } from './components/formulario-publico/formulario-publico.component';
 import { SalaComponent } from './components/sala/sala.component';
 
 registerLocaleData(localeEs)
@@ -43,6 +44,7 @@ registerLocaleData(localeEs)
     AgendaComponent,
     AgendaAjustesComponent,
     RecordatoriosComponent,
+    FormularioPublicoComponent,
   ],
   imports: [
     BrowserModule,

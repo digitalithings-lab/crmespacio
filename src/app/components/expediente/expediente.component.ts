@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Archivo, Billetera, Cliente, Cobro, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
+import { Archivo, Billetera, CampoForm, Cliente, Cobro, Formulario, Nota, TipoCampo, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ServicesalaService } from 'src/app/services/servicesala.service';
 import { claseEstado, claseTipo, detalleEstado, etiquetaEstado, etiquetaTipo, nombreGrupo } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
-type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones' | 'billetera'
+type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones' | 'billetera' | 'formularios'
 
 @Component({
   selector: 'app-expediente',
@@ -32,6 +32,23 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   public cargandoSalas = true
   public creandoSala = false
   public nombreSala = ''
+
+  // Formularios
+  public formularios: Formulario[] = []
+  public cargandoFormularios = true
+  public constructorAbierto = false
+  public guardandoForm = false
+  public nuevoForm = this.formVacio()
+  public tiposCampo: { valor: TipoCampo; etiqueta: string }[] = [
+    { valor: 'texto', etiqueta: 'Texto corto' }, { valor: 'parrafo', etiqueta: 'Texto largo' }, { valor: 'numero', etiqueta: 'Número' },
+    { valor: 'fecha', etiqueta: 'Fecha' }, { valor: 'correo', etiqueta: 'Correo' }, { valor: 'telefono', etiqueta: 'Teléfono' },
+    { valor: 'opcion', etiqueta: 'Elegir una opción' }, { valor: 'casillas', etiqueta: 'Varias opciones' }, { valor: 'sino', etiqueta: 'Sí / No' },
+    { valor: 'archivo', etiqueta: 'Adjuntar fotos o archivos' },
+  ]
+  public diasUrl = 7
+  public ocupadoForm: { [id: string]: boolean } = {}
+  public respuestas: { formulario: Formulario; respuestas: any[] } | null = null
+  public copiado: string | null = null
 
   // Billetera
   public billetera: Billetera | null = null
@@ -63,6 +80,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     this.cargarArchivos()
     this.cargarSalas()
     this.cargarBilletera()
+    this.cargarFormularios()
     this.sub = this.service.notasActualizadas$.subscribe(() => this.cargarNotas())
   }
 
@@ -219,6 +237,121 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   }
 
   get pendientes(): number { return this.billetera?.cobros.filter(c => c.estado === 'pendiente').length ?? 0 }
+
+  // ---- Formularios ----
+  private formVacio() {
+    return { titulo: '', descripcion: '', campos: [] as (CampoForm & { opcionesTexto?: string })[] }
+  }
+
+  cargarFormularios() {
+    this.service.listarFormularios(this.id).subscribe({
+      next: (resp) => { this.formularios = resp.data ?? []; this.cargandoFormularios = false },
+      error: () => { this.cargandoFormularios = false }
+    })
+  }
+
+  abrirConstructor(plantilla: 'vacio' | 'datos' | 'documentos' = 'vacio') {
+    const f = this.formVacio()
+    if (plantilla === 'datos') {
+      f.titulo = 'Datos personales'
+      f.descripcion = 'Por favor completa tus datos. Toda la información es confidencial.'
+      f.campos = [
+        { tipo: 'texto', etiqueta: 'Nombre completo', requerido: true }, { tipo: 'texto', etiqueta: 'Cédula o documento', requerido: true },
+        { tipo: 'fecha', etiqueta: 'Fecha de nacimiento', requerido: true }, { tipo: 'telefono', etiqueta: 'Teléfono', requerido: true },
+        { tipo: 'correo', etiqueta: 'Correo electrónico', requerido: true }, { tipo: 'texto', etiqueta: 'Dirección', requerido: false },
+        { tipo: 'texto', etiqueta: 'Contacto de emergencia (nombre y teléfono)', requerido: false },
+      ]
+    } else if (plantilla === 'documentos') {
+      f.titulo = 'Documentos y fotos'
+      f.descripcion = 'Sube aquí los documentos que te pedimos. Puedes tomar la foto directamente con tu celular.'
+      f.campos = [{ tipo: 'archivo', etiqueta: 'Fotos o documentos', requerido: true, max: 5, ayuda: 'Fotos (JPG, PNG), PDF o Word' }]
+    }
+    this.nuevoForm = f
+    this.constructorAbierto = true
+  }
+
+  agregarCampo() { this.nuevoForm.campos.push({ tipo: 'texto', etiqueta: '', requerido: false }) }
+  quitarCampo(i: number) { this.nuevoForm.campos.splice(i, 1) }
+  moverCampo(i: number, d: number) {
+    const c = this.nuevoForm.campos, j = i + d
+    if (j < 0 || j >= c.length) return;
+    [c[i], c[j]] = [c[j], c[i]]
+  }
+  usaOpciones(c: CampoForm) { return c.tipo === 'opcion' || c.tipo === 'casillas' }
+
+  guardarFormulario() {
+    if (this.guardandoForm) return
+    const f = this.nuevoForm
+    if (f.titulo.trim().length < 3) return this.toast.error('Escribe un título para el formulario')
+    if (!f.campos.length) return this.toast.error('Agrega al menos una pregunta')
+    const campos = f.campos.map(c => ({
+      tipo: c.tipo, etiqueta: c.etiqueta.trim(), requerido: c.requerido, ayuda: c.ayuda?.trim() || undefined, max: c.tipo === 'archivo' ? c.max : undefined,
+      opciones: this.usaOpciones(c) ? (c.opcionesTexto ?? '').split('\n').map(o => o.trim()).filter(Boolean) : undefined
+    }))
+    this.guardandoForm = true
+    this.service.crearFormulario({ idexpediente: this.id, titulo: f.titulo.trim(), descripcion: f.descripcion.trim(), campos }).subscribe({
+      next: () => { this.guardandoForm = false; this.constructorAbierto = false; this.toast.success('Formulario creado. Ahora genera su URL.'); this.cargarFormularios() },
+      error: (err) => { this.guardandoForm = false; this.toast.error(err.error?.message?.trim() || 'No se pudo crear el formulario') }
+    })
+  }
+
+  generarUrl(f: Formulario) {
+    if (this.ocupadoForm[f.id]) return
+    this.ocupadoForm[f.id] = true
+    this.service.generarUrlFormulario(f.id, this.diasUrl).subscribe({
+      next: () => { this.ocupadoForm[f.id] = false; this.toast.success('URL generada'); this.cargarFormularios() },
+      error: (err) => { this.ocupadoForm[f.id] = false; this.toast.error(err.error?.message?.trim() || 'No se pudo generar la URL') }
+    })
+  }
+
+  async copiarUrl(f: Formulario) {
+    if (!f.url) return
+    try { await navigator.clipboard.writeText(f.url); this.copiado = f.id; this.toast.success('URL copiada'); setTimeout(() => { if (this.copiado === f.id) this.copiado = null }, 2500) }
+    catch { this.toast.error('No se pudo copiar la URL') }
+  }
+
+  enlaceWhatsapp(f: Formulario): string {
+    const tel = (this.personas[0]?.telefono ?? '').replace(/[^\d]/g, '')
+    const texto = encodeURIComponent(`Hola, por favor completa este formulario: ${f.url}`)
+    return tel.length >= 7 && tel !== '' ? `https://wa.me/${tel}?text=${texto}` : `https://wa.me/?text=${texto}`
+  }
+
+  cerrarUrl(f: Formulario) {
+    if (!confirm('¿Cerrar el enlace? Quien lo tenga ya no podrá abrirlo.')) return
+    this.service.cerrarFormulario(f.id).subscribe({
+      next: () => { this.toast.success('Enlace cerrado'); this.cargarFormularios() },
+      error: (err) => this.toast.error(err.error?.message?.trim() || 'No se pudo cerrar el enlace')
+    })
+  }
+
+  duplicarForm(f: Formulario) {
+    this.service.duplicarFormulario(f.id).subscribe({
+      next: () => { this.toast.success('Copia creada'); this.cargarFormularios() },
+      error: (err) => this.toast.error(err.error?.message?.trim() || 'No se pudo duplicar')
+    })
+  }
+
+  eliminarForm(f: Formulario) {
+    if (!confirm(`¿Eliminar el formulario "${f.titulo}"? Las respuestas se perderán (los archivos subidos se quedan en la Biblioteca).`)) return
+    this.service.eliminarFormulario(f.id).subscribe({
+      next: () => { this.toast.success('Formulario eliminado'); this.cargarFormularios() },
+      error: (err) => this.toast.error(err.error?.message?.trim() || 'No se pudo eliminar')
+    })
+  }
+
+  verRespuestas(f: Formulario) {
+    this.service.respuestasFormulario(f.id).subscribe({
+      next: (resp) => { this.respuestas = resp.data; this.cargarArchivos() },
+      error: (err) => this.toast.error(err.error?.message?.trim() || 'No se pudieron cargar las respuestas')
+    })
+  }
+
+  valorRespuesta(v: any): string { return Array.isArray(v) ? v.join(', ') : v === null || v === undefined ? '—' : String(v) }
+  etiquetaEstadoForm(e: string): string { return ({ borrador: 'Sin URL', abierto: 'Enlace activo', enviado: 'Respondido', cerrado: 'Cerrado', vencido: 'Enlace vencido' } as any)[e] ?? e }
+  claseEstadoForm(e: string): string {
+    return e === 'enviado' ? 'bg-emerald-100 text-emerald-800' : e === 'abierto' ? 'bg-sky-100 text-sky-800' : e === 'vencido' ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
+  }
+  get formulariosPendientes(): number { return this.formularios.filter(f => f.estado === 'abierto').length }
 
   crearReunion() {
     if (this.creandoSala) return

@@ -63,7 +63,7 @@
       </div>
 
       <ul *ngIf="!cargando && clientesRecientes.length > 0" class="mt-3 divide-y divide-zinc-100">
-        <li *ngFor="let c of clientesRecientes; let i = index" class="animate-fade-up" [style.animation-delay.ms]="i * 50">
+        <li *ngFor="let c of clientesRecientes; let i = index" class="animate-fade-up" [style.animation-delay.ms]="(i < 8 ? i : 8) * 50">
           <a [routerLink]="['/clientes', c.idexpediente]" class="group flex items-center gap-3 rounded-lg py-3 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
             <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">{{ iniciales(c) }}</div>
             <div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">{{ nombreFila(c) }}</p><p class="truncate text-xs text-zinc-500">{{ c.correo }}</p></div>
@@ -103,7 +103,7 @@
       <p *ngIf="!cargando && notasRecientes.length === 0" class="animate-fade-up mt-4 text-sm text-zinc-500">Todavía no hay notas. Usa el botón flotante para escribir una.</p>
 
       <ul *ngIf="!cargando && notasRecientes.length > 0" class="mt-3 divide-y divide-zinc-100">
-        <li *ngFor="let n of notasRecientes; let i = index" class="animate-fade-up" [style.animation-delay.ms]="i * 50">
+        <li *ngFor="let n of notasRecientes; let i = index" class="animate-fade-up" [style.animation-delay.ms]="(i < 8 ? i : 8) * 50">
           <a [routerLink]="['/clientes', n.idexpediente]" class="flex items-center gap-3 rounded-lg py-3 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
             <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500"><i class="ph ph-note-pencil text-lg"></i></div>
             <div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">{{ n.texto }}</p><p class="truncate text-xs text-zinc-500">{{ n.cliente_grupo || (n.cliente_nombre + ' ' + n.cliente_apellido) }}</p></div>
@@ -127,7 +127,7 @@
       <p *ngIf="!cargando && archivosRecientes.length === 0" class="animate-fade-up mt-4 text-sm text-zinc-500">Todavía no hay archivos guardados.</p>
 
       <ul *ngIf="!cargando && archivosRecientes.length > 0" class="mt-3 divide-y divide-zinc-100">
-        <li *ngFor="let a of archivosRecientes; let i = index" class="animate-fade-up" [style.animation-delay.ms]="i * 50">
+        <li *ngFor="let a of archivosRecientes; let i = index" class="animate-fade-up" [style.animation-delay.ms]="(i < 8 ? i : 8) * 50">
           <a [routerLink]="['/clientes', a.idexpediente]" class="flex items-center gap-3 rounded-lg py-3 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
             <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500"><i class="ph text-lg" [ngClass]="'ph-' + icono(a.documento)"></i></div>
             <div class="min-w-0 flex-1"><p class="truncate text-sm font-semibold">{{ a.documento }}</p><p class="truncate text-xs text-zinc-500">{{ a.cliente_grupo || (a.cliente_nombre + ' ' + a.cliente_apellido) }}</p></div>

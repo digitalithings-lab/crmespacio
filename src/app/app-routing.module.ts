@@ -10,6 +10,7 @@ import { ReunionesComponent } from './components/reuniones/reuniones.component';
 import { SalaComponent } from './components/sala/sala.component';
 import { AgendaComponent } from './components/agenda/agenda.component';
 import { AgendaAjustesComponent } from './components/agenda-ajustes/agenda-ajustes.component';
+import { FormularioPublicoComponent } from './components/formulario-publico/formulario-publico.component';
 import { NotasComponent } from './components/notas/notas.component';
 import { BibliotecaComponent } from './components/biblioteca/biblioteca.component';
 
@@ -19,6 +20,8 @@ const routes: Routes = [
   { path: 'crearcuenta', component: CrearcuentaComponent },
   // La sala es pública: quien recibe el enlace entra sin iniciar sesión
   { path: 'sala/:codigo', component: SalaComponent },
+  // Formulario público: quien recibe el enlace lo llena sin iniciar sesión
+  { path: 'formulario/:token', component: FormularioPublicoComponent },
   {
     path: '',
     component: LayoutComponent,
