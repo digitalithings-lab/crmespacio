@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { Archivo, Billetera, Cliente, Cobro, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ServicesalaService } from 'src/app/services/servicesala.service';
-import { claseTipo, etiquetaTipo, nombreGrupo } from 'src/app/utils/tipos';
+import { claseEstado, claseTipo, detalleEstado, etiquetaEstado, etiquetaTipo, nombreGrupo } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
 type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones' | 'billetera'
@@ -290,6 +290,9 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   }
 
   // ---- Presentación ----
+  claseEstado(e?: string | null) { return claseEstado(e) }
+  etiquetaEstado(e?: string | null) { return etiquetaEstado(e) }
+  detalleEstado(c: Cliente) { return detalleEstado(c) }
   claseTipo(tipo: string) { return claseTipo(tipo) }
   etiquetaTipo(tipo: string) { return etiquetaTipo(tipo) }
 

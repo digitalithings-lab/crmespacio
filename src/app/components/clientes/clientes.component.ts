@@ -2,7 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { of, switchMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Cliente, ServiceclientesService } from 'src/app/services/serviceclientes.service';
-import { claseTipo, etiquetaTipo, nombreGrupo, TIPOS } from 'src/app/utils/tipos';
+import { claseEstado, claseTipo, detalleEstado, ESTADOS, etiquetaEstado, etiquetaTipo, nombreGrupo, TIPOS } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
 // Una fila de la tabla: un cliente, o una pareja (dos clientes con el mismo idgrupo)
@@ -24,6 +24,8 @@ export class ClientesComponent implements OnInit {
 
   public busqueda = ''
   public filtroTipo = ''
+  public filtroEstado = ''
+  public estados = ESTADOS
   public tipos = TIPOS
 
   // Formulario
@@ -96,6 +98,7 @@ export class ClientesComponent implements OnInit {
     const q = this.busqueda.trim().toLowerCase()
     return this.filas.filter(f =>
       (!this.filtroTipo || f.principal.tipo === this.filtroTipo) &&
+      (!this.filtroEstado || f.principal.estado === this.filtroEstado) &&
       (!q || f.integrantes.some(c => `${c.nombre} ${c.apellido} ${c.correo} ${c.cedula}`.toLowerCase().includes(q)))
     )
   }
@@ -106,6 +109,12 @@ export class ClientesComponent implements OnInit {
     return `${c.nombre?.[0] ?? ''}${c.apellido?.[0] ?? ''}`.toUpperCase()
   }
 
+
+  // Cuántos clientes hay en cada estado (una pareja cuenta como uno)
+  cuantos(estado: string): number { return this.filas.filter(f => f.principal.estado === estado).length }
+  claseEstado(e?: string | null) { return claseEstado(e) }
+  etiquetaEstado(e?: string | null) { return etiquetaEstado(e) }
+  detalleEstado(c: Cliente) { return detalleEstado(c) }
 
   claseTipo(tipo: string) { return claseTipo(tipo) }
   etiquetaTipo(tipo: string) { return etiquetaTipo(tipo) }

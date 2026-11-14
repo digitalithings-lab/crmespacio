@@ -17,6 +17,11 @@ export interface Cliente {
   // Pareja: las dos personas comparten idgrupo; integrantes trae a ambas (la primera es la principal)
   idgrupo?: string | null
   integrantes?: Cliente[]
+  // Los calcula el servidor: nuevo / activo / inactivo, con lo que se usó para decidirlo
+  estado?: 'nuevo' | 'activo' | 'inactivo'
+  notas_total?: number
+  citas_total?: number
+  ultima_actividad?: string | null
 }
 
 export interface Nota {

@@ -1,0 +1,42 @@
+<!-- Burbuja de recordatorios: queda encima del botón de nueva nota -->
+<div class="fixed bottom-24 right-6 z-40 flex flex-col items-end gap-3">
+
+  <!-- Panel -->
+  <section *ngIf="abierto" class="animate-fade-up w-[min(22rem,calc(100vw-3rem))] overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-xl shadow-zinc-900/10" role="dialog" aria-label="Recordatorios">
+    <div class="flex items-center justify-between gap-2 bg-amber-50 px-4 py-3">
+      <h2 class="flex items-center gap-2 text-sm font-extrabold text-amber-900"><i class="ph ph-push-pin text-base"></i> Recordatorios</h2>
+      <button type="button" (click)="cerrar()" aria-label="Cerrar recordatorios" class="flex h-7 w-7 items-center justify-center rounded-lg text-amber-800/70 transition hover:bg-amber-100"><i class="ph ph-x"></i></button>
+    </div>
+
+    <form (ngSubmit)="agregar()" class="flex gap-2 border-b border-zinc-100 p-3">
+      <input name="recordatorio" [(ngModel)]="texto" type="text" maxlength="300" placeholder="Escribe un recordatorio…" aria-label="Nuevo recordatorio" autocomplete="off"
+        class="min-w-0 flex-1 rounded-xl border border-zinc-300 px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-500/15" />
+      <button type="submit" [disabled]="!texto.trim()" aria-label="Agregar recordatorio" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white transition hover:bg-amber-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"><i class="ph ph-plus text-lg"></i></button>
+    </form>
+
+    <p *ngIf="lista.length === 0" class="px-4 py-6 text-center text-sm text-zinc-500">No tienes recordatorios.</p>
+
+    <ul *ngIf="lista.length" class="max-h-72 divide-y divide-zinc-100 overflow-y-auto">
+      <li *ngFor="let r of lista; trackBy: trackId" class="group flex items-start gap-3 px-4 py-3">
+        <input type="checkbox" [checked]="r.hecho" (change)="marcar(r)" [attr.aria-label]="'Marcar como hecho: ' + r.texto" class="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-zinc-300 text-amber-500 focus:ring-amber-500" />
+        <p class="min-w-0 flex-1 break-words text-sm leading-snug text-zinc-800" [class.line-through]="r.hecho" [class.text-zinc-400]="r.hecho">{{ r.texto }}</p>
+        <button type="button" (click)="quitar(r)" [attr.aria-label]="'Borrar: ' + r.texto" class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-zinc-300 transition hover:bg-red-50 hover:text-red-600 focus-visible:text-red-600"><i class="ph ph-trash text-base"></i></button>
+      </li>
+    </ul>
+
+    <div class="flex items-center justify-between gap-2 border-t border-zinc-100 bg-zinc-50 px-4 py-2.5">
+      <p class="text-[11px] leading-tight text-zinc-400">Se guardan solo en este navegador.</p>
+      <div class="flex gap-3 text-xs font-semibold">
+        <button *ngIf="hayHechos" type="button" (click)="borrarHechos()" class="text-zinc-500 transition hover:text-zinc-800">Quitar hechos</button>
+        <button *ngIf="lista.length" type="button" (click)="borrarTodos()" class="text-red-500 transition hover:text-red-700">Borrar todos</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Burbuja -->
+  <button type="button" (click)="alternar()" [attr.aria-expanded]="abierto" aria-label="Recordatorios"
+    class="relative flex h-14 w-14 items-center justify-center rounded-full bg-amber-400 text-amber-950 shadow-lg shadow-amber-900/20 transition duration-200 hover:bg-amber-300 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/40">
+    <i class="ph text-2xl" [ngClass]="abierto ? 'ph-x' : 'ph-push-pin'"></i>
+    <span *ngIf="pendientes > 0 && !abierto" class="absolute -right-1 -top-1 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full bg-brand-700 px-1.5 text-xs font-bold text-white ring-2 ring-white">{{ pendientes > 9 ? '9+' : pendientes }}</span>
+  </button>
+</div>

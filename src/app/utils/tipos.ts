@@ -71,3 +71,28 @@ export function principalDe(idexpediente: string | null, clientes: ClienteBase[]
   const g = grupos(clientes).find(grupo => grupo.some(c => c.idexpediente === idexpediente))
   return g ? g[0].idexpediente : idexpediente
 }
+
+// ---- Estado del cliente (lo calcula el servidor) ----
+export const ESTADOS = [
+  { valor: 'nuevo', etiqueta: 'Nuevo' },
+  { valor: 'activo', etiqueta: 'Activo' },
+  { valor: 'inactivo', etiqueta: 'Inactivo' },
+]
+
+export function etiquetaEstado(valor?: string | null): string {
+  return ESTADOS.find(e => e.valor === valor)?.etiqueta ?? ''
+}
+
+export function claseEstado(valor?: string | null): string {
+  if (valor === 'activo') return 'bg-emerald-100 text-emerald-800'
+  if (valor === 'nuevo') return 'bg-sky-100 text-sky-800'
+  if (valor === 'inactivo') return 'bg-zinc-200 text-zinc-600'
+  return 'bg-zinc-100 text-zinc-500'
+}
+
+/** Explica por qué el cliente tiene ese estado. */
+export function detalleEstado(c: { estado?: string; notas_total?: number; citas_total?: number; ultima_actividad?: string | null }): string {
+  const partes = [`${c.notas_total ?? 0} notas`, `${c.citas_total ?? 0} citas`]
+  if (c.ultima_actividad) partes.push(`última actividad ${new Date(c.ultima_actividad).toLocaleDateString('es')}`)
+  return partes.join(' · ')
+}

@@ -15,6 +15,10 @@
       <i class="ph ph-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
       <input type="search" [(ngModel)]="busqueda" aria-label="Buscar cliente" placeholder="Buscar por nombre, correo o cédula" class="w-full rounded-xl border border-zinc-200 py-2.5 pl-11 pr-4 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
     </div>
+    <select [(ngModel)]="filtroEstado" aria-label="Filtrar por estado" class="rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm text-zinc-600 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
+      <option value="">Todos los estados</option>
+      <option *ngFor="let e of estados" [value]="e.valor">{{ e.etiqueta }} ({{ cuantos(e.valor) }})</option>
+    </select>
     <select [(ngModel)]="filtroTipo" aria-label="Filtrar por tipo" class="rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm text-zinc-600 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
       <option value="">Todos los tipos</option>
       <option *ngFor="let t of tipos" [value]="t.valor">{{ t.etiqueta }}</option>
@@ -30,6 +34,7 @@
           <th scope="col" class="hidden px-6 py-3 font-semibold lg:table-cell">Teléfono</th>
           <th scope="col" class="hidden px-6 py-3 font-semibold sm:table-cell">Edad</th>
           <th scope="col" class="px-6 py-3 font-semibold">Tipo</th>
+          <th scope="col" class="px-6 py-3 font-semibold">Estado</th>
           <th scope="col" class="px-6 py-3"><span class="sr-only">Abrir expediente</span></th>
         </tr>
       </thead>
@@ -96,6 +101,7 @@
           <td class="hidden px-6 py-4 text-zinc-600 lg:table-cell">{{ f.principal.telefono }}</td>
           <td class="hidden px-6 py-4 text-zinc-600 sm:table-cell">{{ f.principal.edad }}</td>
           <td class="px-6 py-4"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(f.principal.tipo)">{{ etiquetaTipo(f.principal.tipo) }}</span></td>
+          <td class="px-6 py-4"><span *ngIf="f.principal.estado" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseEstado(f.principal.estado)" [title]="detalleEstado(f.principal)">{{ etiquetaEstado(f.principal.estado) }}</span></td>
           <td class="px-6 py-4 text-right"><i class="ph ph-caret-right text-lg text-zinc-300 transition group-hover:translate-x-1 group-hover:text-brand-700"></i></td>
         </tr>
       </ng-container>

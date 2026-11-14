@@ -25,6 +25,7 @@
       <h1 class="truncate text-2xl font-extrabold tracking-tight">{{ nombreGrupo() }}</h1>
       <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
         <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(cliente.tipo)">{{ etiquetaTipo(cliente.tipo) }}</span>
+        <span *ngIf="cliente.estado" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseEstado(cliente.estado)" [title]="detalleEstado(cliente)">{{ etiquetaEstado(cliente.estado) }}</span>
         <span>Expediente <strong class="font-semibold text-zinc-700">#{{ cliente.idexpediente | slice:0:8 }}</strong></span>
       </div>
     </div>
