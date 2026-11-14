@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ArchivoPropio, ServiceclientesService } from 'src/app/services/serviceclientes.service';
-import { categoriaArchivo, formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
+import { categoriaArchivo, esImagenVisible, formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -71,5 +71,6 @@ export class BibliotecaPersonalComponent implements OnInit {
   }
 
   icono(nombre: string) { return iconoArchivo(nombre) }
+  esImagen(nombre: string) { return esImagenVisible(nombre) }
   tamano(bytes: number | null) { return formatoTamano(bytes) }
 }

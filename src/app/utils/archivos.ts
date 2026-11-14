@@ -13,6 +13,9 @@ export function iconoArchivo(nombre: string): string {
   return 'file'
 }
 
+// Formatos que el navegador puede mostrar como miniatura
+export const esImagenVisible = (nombre: string): boolean => ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(extension(nombre))
+
 export function categoriaArchivo(nombre: string): 'Documentos' | 'Imágenes' | 'Otros' {
   const i = iconoArchivo(nombre)
   if (i === 'image') return 'Imágenes'
