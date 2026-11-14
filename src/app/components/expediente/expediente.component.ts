@@ -250,26 +250,23 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     })
   }
 
-  abrirConstructor(plantilla: 'vacio' | 'datos' | 'documentos' = 'vacio') {
+  // Un solo formulario: datos personales y, al final, fotos o documentos (se puede quitar, cambiar o agregar lo que haga falta)
+  abrirConstructor() {
     const f = this.formVacio()
-    if (plantilla === 'datos') {
-      f.titulo = 'Datos personales'
-      f.descripcion = 'Por favor completa tus datos. Toda la información es confidencial.'
-      f.campos = [
-        { tipo: 'texto', etiqueta: 'Nombre completo', requerido: true }, { tipo: 'texto', etiqueta: 'Cédula o documento', requerido: true },
-        { tipo: 'fecha', etiqueta: 'Fecha de nacimiento', requerido: true }, { tipo: 'telefono', etiqueta: 'Teléfono', requerido: true },
-        { tipo: 'correo', etiqueta: 'Correo electrónico', requerido: true }, { tipo: 'texto', etiqueta: 'Dirección', requerido: false },
-        { tipo: 'texto', etiqueta: 'Contacto de emergencia (nombre y teléfono)', requerido: false },
-      ]
-    } else if (plantilla === 'documentos') {
-      f.titulo = 'Documentos y fotos'
-      f.descripcion = 'Sube aquí los documentos que te pedimos. Puedes tomar la foto directamente con tu celular.'
-      f.campos = [{ tipo: 'archivo', etiqueta: 'Fotos o documentos', requerido: true, max: 5, ayuda: 'Fotos (JPG, PNG), PDF o Word' }]
-    }
+    f.titulo = 'Datos personales'
+    f.descripcion = 'Por favor completa tus datos y sube los documentos que te pedimos. Toda la información es confidencial.'
+    f.campos = [
+      { tipo: 'texto', etiqueta: 'Nombre completo', requerido: true }, { tipo: 'texto', etiqueta: 'Cédula o documento', requerido: true },
+      { tipo: 'fecha', etiqueta: 'Fecha de nacimiento', requerido: true }, { tipo: 'telefono', etiqueta: 'Teléfono', requerido: true },
+      { tipo: 'correo', etiqueta: 'Correo electrónico', requerido: true }, { tipo: 'texto', etiqueta: 'Dirección', requerido: false },
+      { tipo: 'texto', etiqueta: 'Contacto de emergencia (nombre y teléfono)', requerido: false },
+      { tipo: 'archivo', etiqueta: 'Fotos o documentos', requerido: false, max: 5, ayuda: 'Puedes tomar la foto con tu celular. Acepta fotos, PDF o Word.' },
+    ]
     this.nuevoForm = f
     this.constructorAbierto = true
   }
 
+  agregarArchivo() { this.nuevoForm.campos.push({ tipo: 'archivo', etiqueta: 'Fotos o documentos', requerido: false, max: 5, ayuda: 'Puedes tomar la foto con tu celular.' }) }
   agregarCampo() { this.nuevoForm.campos.push({ tipo: 'texto', etiqueta: '', requerido: false }) }
   quitarCampo(i: number) { this.nuevoForm.campos.splice(i, 1) }
   moverCampo(i: number, d: number) {

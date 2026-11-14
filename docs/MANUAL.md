@@ -184,8 +184,8 @@ Sirven para que el cliente llene sus datos o suba fotos y documentos desde su ce
 ### Crear un formulario
 
 1. En el expediente del cliente, abre la pestaña **Formularios**.
-2. Elige una plantilla: **Crear formulario de datos** (nombre, cédula, nacimiento, teléfono, correo y más), **Pedir fotos o documentos** o **Formulario en blanco**.
-3. Ajusta el título, el mensaje y las preguntas. Cada pregunta puede ser texto corto o largo, número, fecha, correo, teléfono, elegir una opción, varias opciones, sí o no, o **adjuntar fotos o archivos**. Marca las obligatorias y ordénalas con las flechas.
+2. Pulsa **Crear formulario**. Ya viene con las preguntas de datos más comunes (nombre, cédula, nacimiento, teléfono, correo, dirección y contacto de emergencia) y, al final, una pregunta para **subir fotos o documentos**.
+3. Ajusta lo que necesites: cambia el título y el mensaje, edita, quita u ordena las preguntas con las flechas, y marca cuáles son obligatorias. Con **Agregar pregunta** sumas otra (texto corto o largo, número, fecha, correo, teléfono, elegir una opción, varias opciones o sí o no). Con **Pedir fotos o documentos** agregas otra pregunta para adjuntar archivos.
 4. Pulsa **Crear formulario**.
 
 ### Generar la URL

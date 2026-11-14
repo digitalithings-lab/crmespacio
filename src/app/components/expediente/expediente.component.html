@@ -359,11 +359,9 @@
   <section *ngIf="tab === 'formularios'" role="tabpanel" class="animate-fade-up mt-6">
     <div class="rounded-2xl border border-zinc-200 bg-white p-5">
       <p class="font-semibold">Formularios para {{ cliente.nombre }}</p>
-      <p class="mt-1 text-sm text-zinc-500">Crea un formulario, genera su URL y envíasela. La persona llena los datos y sube fotos o archivos desde su celular, sin crear cuenta. Los archivos quedan en la Biblioteca del expediente.</p>
-      <div class="mt-4 flex flex-wrap gap-2">
-        <button type="button" (click)="abrirConstructor('datos')" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 active:scale-[0.98]"><i class="ph ph-plus text-base"></i> Crear formulario de datos</button>
-        <button type="button" (click)="abrirConstructor('documentos')" class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-[0.98]"><i class="ph ph-paperclip text-base"></i> Pedir fotos o documentos</button>
-        <button type="button" (click)="abrirConstructor('vacio')" class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-[0.98]"><i class="ph ph-pencil-simple-line text-base"></i> Formulario en blanco</button>
+      <p class="mt-1 text-sm text-zinc-500">Crea un formulario con los datos que necesitas y, si quieres, fotos o documentos. Genera su URL y envíasela. La persona llena los datos y sube fotos o archivos desde su celular, sin crear cuenta. Los archivos quedan en la Biblioteca del expediente.</p>
+      <div class="mt-4">
+        <button type="button" (click)="abrirConstructor()" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 active:scale-[0.98]"><i class="ph ph-plus text-base"></i> Crear formulario</button>
       </div>
     </div>
 
@@ -462,7 +460,10 @@
               </div>
             </div>
           </div>
-          <button type="button" (click)="agregarCampo()" class="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-600 transition hover:border-brand-500 hover:text-brand-700"><i class="ph ph-plus"></i> Agregar pregunta</button>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" (click)="agregarCampo()" class="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-600 transition hover:border-brand-500 hover:text-brand-700"><i class="ph ph-plus"></i> Agregar pregunta</button>
+            <button type="button" (click)="agregarArchivo()" class="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 px-4 py-2.5 text-sm font-semibold text-zinc-600 transition hover:border-brand-500 hover:text-brand-700"><i class="ph ph-paperclip"></i> Pedir fotos o documentos</button>
+          </div>
         </div>
       </div>
       <div class="flex justify-end gap-3 border-t border-zinc-100 px-5 py-4">
