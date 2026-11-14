@@ -13,6 +13,7 @@ import { LayoutComponent } from './components/layout/layout.component';
 import { ClientesComponent } from './components/clientes/clientes.component';
 import { NotasComponent } from './components/notas/notas.component';
 import { BibliotecaComponent } from './components/biblioteca/biblioteca.component';
+import { BibliotecaPersonalComponent } from './components/biblioteca-personal/biblioteca-personal.component';
 import { FormsModule } from '@angular/forms';
 import { ToastComponent } from './components/toast/toast.component';
 import { ExpedienteComponent } from './components/expediente/expediente.component';
@@ -38,6 +39,7 @@ registerLocaleData(localeEs)
     ClientesComponent,
     NotasComponent,
     BibliotecaComponent,
+    BibliotecaPersonalComponent,
     ToastComponent,
     ExpedienteComponent,
     NotaFlotanteComponent,

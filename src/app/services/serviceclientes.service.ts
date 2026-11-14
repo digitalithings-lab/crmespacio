@@ -35,10 +35,16 @@ export interface Nota {
   cliente_grupo?: string | null
 }
 
+export interface ArchivoPropio {
+  id: string
+  documento: string
+  fecha_insercion: string
+  url: string | null
+  tamano: number | null
+}
+
 export interface Archivo {
-  // null en los archivos propios (los que no pertenecen a ningún cliente)
-  idexpediente: string | null
-  propio?: boolean
+  idexpediente: string
   documento: string
   fecha_insercion: string
   url: string | null
@@ -282,7 +288,8 @@ export class ServiceclientesService {
     form.append('archivo', archivo)
     return this.http.post<any>(`${api}/subirarchivo/${idexpediente}`, form).pipe(this.cambio())
   }
-  // Archivo propio de la biblioteca: no está unido a ningún cliente
+  // Biblioteca personal: archivos que no pertenecen a ningún cliente
+  listarArchivosPropios(): Observable<any> { return this.http.get<any>(`${api}/archivospropios`) }
   subirArchivoPropio(archivo: File): Observable<any> {
     const form = new FormData()
     form.append('archivo', archivo)

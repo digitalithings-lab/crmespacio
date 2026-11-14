@@ -14,6 +14,7 @@ import { FormularioPublicoComponent } from './components/formulario-publico/form
 import { FormulariosComponent } from './components/formularios/formularios.component';
 import { NotasComponent } from './components/notas/notas.component';
 import { BibliotecaComponent } from './components/biblioteca/biblioteca.component';
+import { BibliotecaPersonalComponent } from './components/biblioteca-personal/biblioteca-personal.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -34,6 +35,7 @@ const routes: Routes = [
       { path: 'clientes/:id', component: ExpedienteComponent },
       { path: 'notas', component: NotasComponent },
       { path: 'biblioteca', component: BibliotecaComponent },
+      { path: 'biblioteca-personal', component: BibliotecaPersonalComponent },
       { path: 'formularios', component: FormulariosComponent },
       { path: 'reuniones', component: ReunionesComponent },
       {path:'crearcuenta',component:CrearcuentaComponent}
