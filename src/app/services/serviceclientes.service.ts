@@ -36,7 +36,9 @@ export interface Nota {
 }
 
 export interface Archivo {
-  idexpediente: string
+  // null en los archivos propios (los que no pertenecen a ningún cliente)
+  idexpediente: string | null
+  propio?: boolean
   documento: string
   fecha_insercion: string
   url: string | null
@@ -279,6 +281,12 @@ export class ServiceclientesService {
     const form = new FormData()
     form.append('archivo', archivo)
     return this.http.post<any>(`${api}/subirarchivo/${idexpediente}`, form).pipe(this.cambio())
+  }
+  // Archivo propio de la biblioteca: no está unido a ningún cliente
+  subirArchivoPropio(archivo: File): Observable<any> {
+    const form = new FormData()
+    form.append('archivo', archivo)
+    return this.http.post<any>(`${api}/subirpropio`, form).pipe(this.cambio())
   }
   listarArchivos(idexpediente?: string): Observable<any> {
     return this.http.get<any>(idexpediente ? `${api}/archivos/${idexpediente}` : `${api}/archivos`)

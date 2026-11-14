@@ -24,17 +24,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public archivosRecientes: any[] = []
 
   public tipos = TIPOS
+  // Fecha de hoy (se renueva sola si la pantalla queda abierta pasada la medianoche)
+  public hoy = new Date()
+  private reloj?: any
   private sub?: Subscription
 
   constructor(private service: ServiceclientesService, private toast: ToastService) { }
 
   ngOnInit(): void {
+    this.reloj = setInterval(() => { this.hoy = new Date() }, 60_000)
     this.datos()
     // Si guardas una nota desde el botón flotante, el resumen se actualiza solo
     this.sub = this.service.notasActualizadas$.subscribe(() => this.datos(false))
   }
 
-  ngOnDestroy(): void { this.sub?.unsubscribe() }
+  ngOnDestroy(): void { this.sub?.unsubscribe(); clearInterval(this.reloj) }
 
   datos(mostrarSkeleton = true) {
     if (mostrarSkeleton) this.cargando = true

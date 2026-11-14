@@ -5,6 +5,13 @@ import { claseTipo, etiquetaTipo, opcionesCliente, principalDe } from 'src/app/u
 import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ToastService } from 'src/app/services/toast.service';
 
+// Fecha y hora actuales en el formato del campo datetime-local (hora local, sin zona)
+const ahoraLocal = (): string => {
+  const d = new Date()
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+  return d.toISOString().slice(0, 16)
+}
+
 @Component({
   selector: 'app-nota-flotante',
   templateUrl: './nota-flotante.component.html',
@@ -33,6 +40,8 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
 
   public idexpediente: string | null = null
   public texto = ''
+  // Fecha y hora de la nota: la elige quien escribe (formato del campo datetime-local)
+  public fecha = ahoraLocal()
 
   private contexto: string | null = null
   private subs: Subscription[] = []
@@ -57,6 +66,7 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
   abrir() {
     this.abierto = true
     this.pestana = 'nota'
+    this.fecha = ahoraLocal()
     // Si estás dentro de un expediente, ese cliente queda preseleccionado
     if (this.contexto) { this.idexpediente = this.contexto; this.cargarDatos() }
     this.cargandoClientes = true
@@ -136,16 +146,23 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
 
   guardar() {
     if (this.guardando) return
+    const fecha = new Date(this.fecha)
+    if (!this.fecha || Number.isNaN(fecha.getTime())) {
+      this.toast.error('Escribe la fecha de la nota')
+      return
+    }
     this.guardando = true
     this.service.crearNota({
       idexpediente: this.idexpediente,
-      texto: this.texto.trim()
+      texto: this.texto.trim(),
+      fecha: fecha.toISOString()
     }).subscribe({
       next: (resp) => {
         this.guardando = false
         if (resp.ok === true) {
           this.toast.success('Nota guardada')
           this.texto = ''
+          this.fecha = ahoraLocal()
           if (this.lateral) this.pestana = 'notas'  // sigues en la llamada: la nota aparece en la lista
           else this.abierto = false
         }

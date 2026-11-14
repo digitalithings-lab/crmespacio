@@ -15,10 +15,14 @@ export class BibliotecaComponent implements OnInit {
   public cargando = true
   public subiendo = false
   public arrastrando = false
-  public idexpediente: string | null = null
+  // 'propio' = archivo mío, sin cliente; si no, el idexpediente del cliente elegido
+  public idexpediente: string | null = 'propio'
 
   public filtro = 'Todos'
   public filtros = ['Todos', 'Documentos', 'Imágenes', 'Otros']
+  // Mis archivos (sin cliente) o los de los expedientes
+  public origen = 'Todos'
+  public origenes = ['Todos', 'Míos', 'De clientes']
 
   constructor(private service: ServiceclientesService, private toast: ToastService) { }
 
@@ -39,7 +43,8 @@ export class BibliotecaComponent implements OnInit {
   get opciones() { return opcionesCliente(this.clientes) }
 
   get filtrados(): Archivo[] {
-    return this.filtro === 'Todos' ? this.archivos : this.archivos.filter(a => categoriaArchivo(a.documento) === this.filtro)
+    const porTipo = this.filtro === 'Todos' ? this.archivos : this.archivos.filter(a => categoriaArchivo(a.documento) === this.filtro)
+    return this.origen === 'Todos' ? porTipo : porTipo.filter(a => (this.origen === 'Míos') === !!a.propio)
   }
 
   alElegir(event: Event) {
@@ -62,9 +67,10 @@ export class BibliotecaComponent implements OnInit {
   private async subir(files: File[]) {
     if (!files.length || this.subiendo) return
     if (!this.idexpediente) {
-      this.toast.info('Primero elige el cliente al que pertenece el archivo')
+      this.toast.info('Elige si el archivo es tuyo o de un cliente')
       return
     }
+    const propio = this.idexpediente === 'propio'
     this.subiendo = true
     for (const file of files) {
       if (file.size > 4 * 1024 * 1024) {
@@ -73,7 +79,8 @@ export class BibliotecaComponent implements OnInit {
       }
       try {
         await new Promise<void>((ok, fail) =>
-          this.service.subirArchivo(this.idexpediente!, file).subscribe({ next: () => ok(), error: (e) => fail(e) })
+          (propio ? this.service.subirArchivoPropio(file) : this.service.subirArchivo(this.idexpediente!, file))
+            .subscribe({ next: () => ok(), error: (e) => fail(e) })
         )
         this.toast.success(`"${file.name}" subido`)
       } catch (e: any) {

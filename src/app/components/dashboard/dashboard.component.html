@@ -1,7 +1,8 @@
 <div class="flex flex-wrap items-end justify-between gap-4">
-  <div>
-    <p class="text-sm font-medium text-zinc-500">Bienvenido de nuevo{{ nombre ? ', ' + nombre : '' }}</p>
-    <h1 class="mt-1 text-3xl font-extrabold tracking-tight">Dashboard</h1>
+  <div class="min-w-0">
+    <p class="text-sm font-medium text-zinc-500">Bienvenido de nuevo{{ nombre ? ', ' + nombre : '' }} · Dashboard</p>
+    <h1 class="mt-1 text-4xl font-extrabold leading-tight first-letter:uppercase tracking-tight sm:text-5xl">{{ hoy | date: "EEEE d 'de' MMMM" }}</h1>
+    <p class="mt-1 text-lg font-semibold text-brand-700">{{ hoy | date: "y · HH:mm" }}</p>
   </div>
   <a routerLink="/clientes" [queryParams]="{ nuevo: 1 }" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
     <i class="ph ph-plus text-base"></i> Nuevo cliente
