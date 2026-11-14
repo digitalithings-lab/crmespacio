@@ -28,8 +28,8 @@ export class FormulariosComponent implements OnInit {
   public idexpedienteAsignar: string | null = null
   public dias = 7
   public asignando = false
-  public resultado: Formulario | null = null
-  public copiado = false
+  public resultados: Formulario[] = []
+  public copiado: string | null = null
 
   constructor(private service: ServiceclientesService, private toast: ToastService) { }
 
@@ -86,8 +86,8 @@ export class FormulariosComponent implements OnInit {
   abrirAsignar(p: Plantilla) {
     this.asignar = p
     this.idexpedienteAsignar = null
-    this.resultado = null
-    this.copiado = false
+    this.resultados = []
+    this.copiado = null
     if (!this.clientesLista.length) {
       this.service.listarClientes().subscribe({ next: (r) => { this.clientesLista = r.data ?? [] }, error: () => { } })
     }
@@ -99,25 +99,31 @@ export class FormulariosComponent implements OnInit {
     if (!this.asignar || !this.idexpedienteAsignar || this.asignando) return
     this.asignando = true
     this.service.asignarPlantilla(this.asignar.id, { idexpediente: this.idexpedienteAsignar, generarUrl: true, dias: this.dias }).subscribe({
-      next: (r) => { this.asignando = false; this.resultado = r.data; this.cargarSeguimiento(); this.toast.success('Formulario asignado') },
+      next: (r) => { this.asignando = false; this.resultados = r.todos ?? [r.data]; this.cargarSeguimiento(); this.toast.success(this.resultados.length > 1 ? 'Formularios asignados: uno para cada persona' : 'Formulario asignado') },
       error: (err) => { this.asignando = false; this.toast.error(err.error?.message?.trim() || 'No se pudo asignar el formulario') }
     })
   }
 
-  async copiarUrl() {
-    if (!this.resultado?.url) return
-    try { await navigator.clipboard.writeText(this.resultado.url); this.copiado = true; this.toast.success('URL copiada') }
+  async copiarUrl(f: Formulario) {
+    if (!f.url) return
+    try { await navigator.clipboard.writeText(f.url); this.copiado = f.id; this.toast.success('URL copiada') }
     catch { this.toast.error('No se pudo copiar la URL') }
   }
 
-  enlaceWhatsapp(): string {
-    const c = this.clientesLista.find(x => x.idexpediente === this.idexpedienteAsignar)
-    const tel = (c?.telefono ?? '').replace(/[^\d]/g, '')
-    const texto = encodeURIComponent(`Hola, por favor completa este formulario: ${this.resultado?.url}`)
+  // Cada persona recibe su enlace en su propio teléfono
+  enlaceWhatsapp(f: Formulario): string {
+    const tel = (f.cliente_telefono ?? '').replace(/[^\d]/g, '')
+    const texto = encodeURIComponent(`Hola, por favor completa este formulario: ${f.url}`)
     return tel.length >= 7 ? `https://wa.me/${tel}?text=${texto}` : `https://wa.me/?text=${texto}`
   }
 
-  cerrarAsignar() { this.asignar = null; this.resultado = null }
+  // ¿El cliente elegido es una pareja?
+  get esPareja(): boolean {
+    const c = this.clientesLista.find(x => x.idexpediente === this.idexpedienteAsignar)
+    return !!c?.idgrupo
+  }
+
+  cerrarAsignar() { this.asignar = null; this.resultados = [] }
 
   // ---- Presentación ----
   etiquetaEstado(e: string): string { return ({ borrador: 'Sin URL', abierto: 'Enlace activo', enviado: 'Respondido', cerrado: 'Cerrado', vencido: 'Enlace vencido' } as any)[e] ?? e }

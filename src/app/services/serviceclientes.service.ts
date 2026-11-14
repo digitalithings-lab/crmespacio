@@ -105,10 +105,12 @@ export interface Formulario {
   id: string; idexpediente: string; titulo: string; descripcion: string | null; campos: CampoForm[]
   estado: 'borrador' | 'abierto' | 'enviado' | 'cerrado' | 'vencido'
   expira_en: string | null; respondido_en: string | null; fecha_creacion: string; url: string | null; archivos: number
+  // Persona a quien pertenece (en una pareja, cada una tiene su propio formulario)
+  cliente_nombre?: string; cliente_apellido?: string; cliente_telefono?: string
 }
 
 export interface Plantilla { id: string; titulo: string; descripcion: string | null; campos: CampoForm[]; fecha_creacion: string; actualizada: string }
-export interface FormularioGlobal extends Formulario { cliente_nombre: string; cliente_apellido: string }
+export type FormularioGlobal = Formulario
 
 @Injectable({
   providedIn: 'root'

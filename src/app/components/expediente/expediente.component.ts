@@ -237,6 +237,9 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   get pendientes(): number { return this.billetera?.cobros.filter(c => c.estado === 'pendiente').length ?? 0 }
 
   // ---- Formularios ----
+  // En una pareja, cada persona recibe su propio formulario y su propia URL
+  get esPareja(): boolean { return this.personas.length > 1 }
+
   cargarFormularios() {
     this.service.listarFormularios(this.id).subscribe({
       next: (resp) => { this.formularios = resp.data ?? []; this.cargandoFormularios = false },
@@ -254,7 +257,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     if (this.guardandoForm) return
     this.guardandoForm = true
     this.service.crearFormulario({ idexpediente: this.id, ...b }).subscribe({
-      next: () => { this.guardandoForm = false; this.constructorAbierto = false; this.toast.success('Formulario creado. Ahora genera su URL.'); this.cargarFormularios() },
+      next: () => { this.guardandoForm = false; this.constructorAbierto = false; this.toast.success(this.esPareja ? 'Formularios creados, uno para cada persona. Ahora genera sus URL.' : 'Formulario creado. Ahora genera su URL.'); this.cargarFormularios() },
       error: (err) => { this.guardandoForm = false; this.toast.error(err.error?.message?.trim() || 'No se pudo crear el formulario') }
     })
   }
@@ -263,7 +266,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     if (!this.plantillaElegida || this.asignando) return
     this.asignando = true
     this.service.asignarPlantilla(this.plantillaElegida, { idexpediente: this.id, generarUrl: true, dias: this.diasUrl }).subscribe({
-      next: () => { this.asignando = false; this.plantillaElegida = null; this.toast.success('Formulario asignado. La URL está lista para enviar.'); this.cargarFormularios() },
+      next: () => { this.asignando = false; this.plantillaElegida = null; this.toast.success(this.esPareja ? 'Formularios asignados: cada persona tiene su propia URL.' : 'Formulario asignado. La URL está lista para enviar.'); this.cargarFormularios() },
       error: (err) => { this.asignando = false; this.toast.error(err.error?.message?.trim() || 'No se pudo asignar la plantilla') }
     })
   }
@@ -291,7 +294,8 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   }
 
   enlaceWhatsapp(f: Formulario): string {
-    const tel = (this.personas[0]?.telefono ?? '').replace(/[^\d]/g, '')
+    // Cada formulario es de una persona: se le escribe a su propio teléfono
+    const tel = ((this.personas.find(p => p.idexpediente === f.idexpediente) ?? this.personas[0])?.telefono ?? '').replace(/[^\d]/g, '')
     const texto = encodeURIComponent(`Hola, por favor completa este formulario: ${f.url}`)
     return tel.length >= 7 && tel !== '' ? `https://wa.me/${tel}?text=${texto}` : `https://wa.me/?text=${texto}`
   }

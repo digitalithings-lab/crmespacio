@@ -194,6 +194,8 @@ Para usarla con un cliente, pulsa **Asignar a un cliente** en la plantilla, elig
 
 Si después editas la plantilla, los formularios que ya enviaste no cambian: cada cliente conserva su copia.
 
+**Parejas:** si el cliente es una pareja, el sistema crea **un formulario para cada persona**, cada uno con su propia URL. Cada quien recibe el suyo (el botón de WhatsApp usa el teléfono de esa persona), lo llena por separado y sus respuestas y fotos se guardan en su propio expediente. En la pestaña **Formularios** de la pareja, cada formulario muestra para quién es.
+
 ### Desde el expediente de un cliente
 
 En el expediente, pestaña **Formularios**, puedes:
