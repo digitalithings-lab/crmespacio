@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ServiceclientesService } from 'src/app/services/serviceclientes.service';
 
 @Component({
   selector: 'app-layout',
@@ -10,7 +11,9 @@ export class LayoutComponent implements OnInit {
   public apellido = localStorage.getItem('apellido')
   public correo = localStorage.getItem('correo')
  
-  constructor(){}
+  public mostrarRecordatorios$ = this.clientes.mostrarRecordatorios
+
+  constructor(private clientes: ServiceclientesService) {}
   
   ngOnInit(): void {
   }

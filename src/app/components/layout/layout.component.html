@@ -53,4 +53,6 @@
 
   <!-- Nota flotante en todas las páginas -->
   <app-nota-flotante></app-nota-flotante>
+  <!-- Burbuja de recordatorios: solo se muestra en el dashboard -->
+  <app-recordatorios *ngIf="mostrarRecordatorios$ | async"></app-recordatorios>
 </div>

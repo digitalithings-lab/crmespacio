@@ -111,6 +111,9 @@ export class ServiceclientesService {
   private _abrirNota = new Subject<void>()
   readonly abrirNota$ = this._abrirNota.asObservable()
 
+  // El dashboard enciende la burbuja de recordatorios (vive en el diseño principal para quedar fija en la ventana)
+  readonly mostrarRecordatorios = new BehaviorSubject<boolean>(false)
+
   // Cliente al que pertenece la vista actual (el expediente abierto), para preseleccionarlo
   readonly clienteContexto = new BehaviorSubject<string | null>(null)
 
