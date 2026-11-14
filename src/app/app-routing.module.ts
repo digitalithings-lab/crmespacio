@@ -11,6 +11,7 @@ import { SalaComponent } from './components/sala/sala.component';
 import { AgendaComponent } from './components/agenda/agenda.component';
 import { AgendaAjustesComponent } from './components/agenda-ajustes/agenda-ajustes.component';
 import { FormularioPublicoComponent } from './components/formulario-publico/formulario-publico.component';
+import { FormulariosComponent } from './components/formularios/formularios.component';
 import { NotasComponent } from './components/notas/notas.component';
 import { BibliotecaComponent } from './components/biblioteca/biblioteca.component';
 
@@ -33,6 +34,7 @@ const routes: Routes = [
       { path: 'clientes/:id', component: ExpedienteComponent },
       { path: 'notas', component: NotasComponent },
       { path: 'biblioteca', component: BibliotecaComponent },
+      { path: 'formularios', component: FormulariosComponent },
       { path: 'reuniones', component: ReunionesComponent },
       {path:'crearcuenta',component:CrearcuentaComponent}
     ],

@@ -8,7 +8,7 @@ El CRM reúne en un solo lugar todo lo que necesitas para atender: la ficha de c
 
 Las citas que las personas piden desde el sitio web (espaciovitalpsic.site/agendar) aparecen solas en la Agenda. Desde ahí las confirmas y el sistema se encarga de registrar al cliente, crear el cobro y enviar el correo de confirmación.
 
-El menú de la izquierda tiene seis secciones: Dashboard, Agenda, Clientes, Notas, Biblioteca y Reuniones. En el celular el menú se abre con el botón de las tres rayas, arriba a la izquierda.
+El menú de la izquierda tiene siete secciones: Dashboard, Agenda, Clientes, Notas, Biblioteca, Formularios y Reuniones. En el celular el menú se abre con el botón de las tres rayas, arriba a la izquierda.
 
 Dos botones flotantes te acompañan en todas las páginas, abajo a la derecha: el amarillo con la chincheta (recordatorios) y el rojo con el lápiz (nueva nota).
 
@@ -179,25 +179,38 @@ En un cobro no pagado, **Enviar recordatorio** le manda al cliente un correo rec
 
 ## 10. Formularios para tus clientes
 
-Sirven para que el cliente llene sus datos o suba fotos y documentos desde su celular, sin crear una cuenta.
+Sirven para que el cliente llene sus datos o suba fotos y documentos desde su celular, sin crear una cuenta. Hay dos formas de trabajar: con **plantillas generales** (lo más cómodo) o creando un formulario solo para un cliente.
 
-### Crear un formulario
+### Plantillas generales (menú Formularios)
 
-1. En el expediente del cliente, abre la pestaña **Formularios**.
-2. Pulsa **Crear formulario**. Ya viene con las preguntas de datos más comunes (nombre, cédula, nacimiento, teléfono, correo, dirección y contacto de emergencia) y, al final, una pregunta para **subir fotos o documentos**.
-3. Ajusta lo que necesites: cambia el título y el mensaje, edita, quita u ordena las preguntas con las flechas, y marca cuáles son obligatorias. Con **Agregar pregunta** sumas otra (texto corto o largo, número, fecha, correo, teléfono, elegir una opción, varias opciones o sí o no). Con **Pedir fotos o documentos** agregas otra pregunta para adjuntar archivos.
-4. Pulsa **Crear formulario**.
+Una plantilla es un formulario que armas una sola vez y reutilizas con cualquier cliente.
 
-### Generar la URL
+1. Entra al menú **Formularios** y pulsa **Nueva plantilla**.
+2. Ya viene con las preguntas de datos más comunes (nombre, cédula, nacimiento, teléfono, correo, dirección y contacto de emergencia) y, al final, una pregunta para **subir fotos o documentos**.
+3. Ajusta lo que necesites: cambia el título y el mensaje, edita, quita u ordena las preguntas con las flechas y marca cuáles son obligatorias. Con **Agregar pregunta** sumas otra (texto corto o largo, número, fecha, correo, teléfono, elegir una opción, varias opciones o sí o no). Con **Pedir fotos o documentos** agregas otra pregunta para adjuntar archivos.
+4. Pulsa **Crear plantilla**.
 
-1. En el formulario creado, elige en cuántos días vence el enlace (1 a 30) y pulsa **Generar URL**.
-2. Pulsa **Copiar URL** o **Enviar por WhatsApp**.
+Para usarla con un cliente, pulsa **Asignar a un cliente** en la plantilla, elige quién debe llenarla y en cuántos días vence el enlace. El sistema crea **el formulario de ese cliente** y genera su URL, lista para **Copiar URL** o **Enviar por WhatsApp**.
 
-La URL es única para ese formulario y está ligada al expediente del cliente. El cliente la abre, llena los datos y sube sus archivos. Si ya no quieres que se use, pulsa **Cerrar enlace**; si venció, genera una nueva.
+Si después editas la plantilla, los formularios que ya enviaste no cambian: cada cliente conserva su copia.
+
+### Desde el expediente de un cliente
+
+En el expediente, pestaña **Formularios**, puedes:
+
+- **Usar una plantilla:** elige una y pulsa **Asignar y generar URL**.
+- **Crear un formulario nuevo** solo para ese cliente, con las mismas opciones del constructor.
+- **Guardar como plantilla** un formulario que ya hiciste, para reutilizarlo con otros clientes.
+
+### Generar o cambiar la URL
+
+Cada formulario tiene su propia URL, ligada al expediente del cliente. Si el enlace venció o lo cerraste, elige en cuántos días vence (1 a 30) y pulsa **Generar URL** otra vez. **Cerrar enlace** hace que deje de funcionar.
 
 ### Ver lo que respondió
 
-Cuando el cliente envía el formulario, recibes un correo de aviso y el formulario pasa a **Respondido**. Pulsa **Ver respuestas** para leer cada respuesta y abrir los archivos. Los archivos también quedan en la **Biblioteca** del cliente.
+Cuando el cliente envía el formulario, recibes un correo de aviso y el formulario pasa a **Respondido**. En el expediente, pestaña **Formularios**, pulsa **Ver respuestas** para leer cada respuesta y abrir los archivos. Los archivos también quedan en la **Biblioteca** del cliente. Todo se guarda en el expediente de la persona que lo llenó.
+
+En el menú **Formularios**, abajo, hay una tabla con todos los formularios enviados: a qué cliente, si ya respondió o falta, y la fecha.
 
 Un formulario se responde una sola vez. Para pedir los datos de nuevo, usa **Pedir de nuevo (copia)**.
 

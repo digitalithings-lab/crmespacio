@@ -22,6 +22,8 @@ import { AgendaComponent } from './components/agenda/agenda.component';
 import { AgendaAjustesComponent } from './components/agenda-ajustes/agenda-ajustes.component';
 import { RecordatoriosComponent } from './components/recordatorios/recordatorios.component';
 import { FormularioPublicoComponent } from './components/formulario-publico/formulario-publico.component';
+import { FormulariosComponent } from './components/formularios/formularios.component';
+import { ConstructorFormularioComponent } from './components/constructor-formulario/constructor-formulario.component';
 import { SalaComponent } from './components/sala/sala.component';
 
 registerLocaleData(localeEs)
@@ -45,6 +47,8 @@ registerLocaleData(localeEs)
     AgendaAjustesComponent,
     RecordatoriosComponent,
     FormularioPublicoComponent,
+    FormulariosComponent,
+    ConstructorFormularioComponent,
   ],
   imports: [
     BrowserModule,

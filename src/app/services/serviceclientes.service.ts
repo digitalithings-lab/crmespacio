@@ -107,6 +107,9 @@ export interface Formulario {
   expira_en: string | null; respondido_en: string | null; fecha_creacion: string; url: string | null; archivos: number
 }
 
+export interface Plantilla { id: string; titulo: string; descripcion: string | null; campos: CampoForm[]; fecha_creacion: string; actualizada: string }
+export interface FormularioGlobal extends Formulario { cliente_nombre: string; cliente_apellido: string }
+
 @Injectable({
   providedIn: 'root'
 })
@@ -210,6 +213,16 @@ export class ServiceclientesService {
   duplicarFormulario(id: string): Observable<any> { return this.http.post<any>(`${api}/formularios/${id}/duplicar`, {}) }
   eliminarFormulario(id: string): Observable<any> { return this.http.delete<any>(`${api}/formularios/${id}`) }
   respuestasFormulario(id: string): Observable<any> { return this.http.get<any>(`${api}/formularios/${id}/respuestas`) }
+  // Plantillas generales (se asignan a cada cliente) y seguimiento
+  listarFormulariosGlobal(): Observable<any> { return this.http.get<any>(`${api}/formularios`) }
+  listarPlantillas(): Observable<any> { return this.http.get<any>(`${api}/plantillas`) }
+  crearPlantilla(data: any): Observable<any> { return this.http.post<any>(`${api}/plantillas`, data) }
+  editarPlantilla(id: string, data: any): Observable<any> { return this.http.put<any>(`${api}/plantillas/${id}`, data) }
+  eliminarPlantilla(id: string): Observable<any> { return this.http.delete<any>(`${api}/plantillas/${id}`) }
+  asignarPlantilla(id: string, data: { idexpediente: string; generarUrl?: boolean; dias?: number }): Observable<any> {
+    return this.http.post<any>(`${api}/plantillas/${id}/asignar`, data)
+  }
+  formularioAPlantilla(id: string): Observable<any> { return this.http.post<any>(`${api}/formularios/${id}/plantilla`, {}) }
   // Página pública
   verFormularioPublico(token: string): Observable<any> { return this.http.get<any>(`${api}/f/${token}`) }
   subirArchivoFormulario(token: string, campo: string, file: File): Observable<any> {

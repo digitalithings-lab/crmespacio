@@ -1,11 +1,12 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { Archivo, Billetera, CampoForm, Cliente, Cobro, Formulario, Nota, TipoCampo, ServiceclientesService } from 'src/app/services/serviceclientes.service';
+import { Archivo, Billetera, Cliente, Cobro, Formulario, Nota, Plantilla, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ServicesalaService } from 'src/app/services/servicesala.service';
 import { claseEstado, claseTipo, detalleEstado, etiquetaEstado, etiquetaTipo, nombreGrupo } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
+import { BorradorFormulario, modeloDatos } from '../constructor-formulario/constructor-formulario.component';
 
 type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones' | 'billetera' | 'formularios'
 
@@ -38,13 +39,10 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   public cargandoFormularios = true
   public constructorAbierto = false
   public guardandoForm = false
-  public nuevoForm = this.formVacio()
-  public tiposCampo: { valor: TipoCampo; etiqueta: string }[] = [
-    { valor: 'texto', etiqueta: 'Texto corto' }, { valor: 'parrafo', etiqueta: 'Texto largo' }, { valor: 'numero', etiqueta: 'Número' },
-    { valor: 'fecha', etiqueta: 'Fecha' }, { valor: 'correo', etiqueta: 'Correo' }, { valor: 'telefono', etiqueta: 'Teléfono' },
-    { valor: 'opcion', etiqueta: 'Elegir una opción' }, { valor: 'casillas', etiqueta: 'Varias opciones' }, { valor: 'sino', etiqueta: 'Sí / No' },
-    { valor: 'archivo', etiqueta: 'Adjuntar fotos o archivos' },
-  ]
+  public borradorInicial: BorradorFormulario = modeloDatos()
+  public plantillas: Plantilla[] = []
+  public plantillaElegida: string | null = null
+  public asignando = false
   public diasUrl = 7
   public ocupadoForm: { [id: string]: boolean } = {}
   public respuestas: { formulario: Formulario; respuestas: any[] } | null = null
@@ -239,56 +237,41 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   get pendientes(): number { return this.billetera?.cobros.filter(c => c.estado === 'pendiente').length ?? 0 }
 
   // ---- Formularios ----
-  private formVacio() {
-    return { titulo: '', descripcion: '', campos: [] as (CampoForm & { opcionesTexto?: string })[] }
-  }
-
   cargarFormularios() {
     this.service.listarFormularios(this.id).subscribe({
       next: (resp) => { this.formularios = resp.data ?? []; this.cargandoFormularios = false },
       error: () => { this.cargandoFormularios = false }
     })
+    this.service.listarPlantillas().subscribe({ next: (r) => { this.plantillas = r.data ?? [] }, error: () => { } })
   }
 
-  // Un solo formulario: datos personales y, al final, fotos o documentos (se puede quitar, cambiar o agregar lo que haga falta)
   abrirConstructor() {
-    const f = this.formVacio()
-    f.titulo = 'Datos personales'
-    f.descripcion = 'Por favor completa tus datos y sube los documentos que te pedimos. Toda la información es confidencial.'
-    f.campos = [
-      { tipo: 'texto', etiqueta: 'Nombre completo', requerido: true }, { tipo: 'texto', etiqueta: 'Cédula o documento', requerido: true },
-      { tipo: 'fecha', etiqueta: 'Fecha de nacimiento', requerido: true }, { tipo: 'telefono', etiqueta: 'Teléfono', requerido: true },
-      { tipo: 'correo', etiqueta: 'Correo electrónico', requerido: true }, { tipo: 'texto', etiqueta: 'Dirección', requerido: false },
-      { tipo: 'texto', etiqueta: 'Contacto de emergencia (nombre y teléfono)', requerido: false },
-      { tipo: 'archivo', etiqueta: 'Fotos o documentos', requerido: false, max: 5, ayuda: 'Puedes tomar la foto con tu celular. Acepta fotos, PDF o Word.' },
-    ]
-    this.nuevoForm = f
+    this.borradorInicial = modeloDatos()
     this.constructorAbierto = true
   }
 
-  agregarArchivo() { this.nuevoForm.campos.push({ tipo: 'archivo', etiqueta: 'Fotos o documentos', requerido: false, max: 5, ayuda: 'Puedes tomar la foto con tu celular.' }) }
-  agregarCampo() { this.nuevoForm.campos.push({ tipo: 'texto', etiqueta: '', requerido: false }) }
-  quitarCampo(i: number) { this.nuevoForm.campos.splice(i, 1) }
-  moverCampo(i: number, d: number) {
-    const c = this.nuevoForm.campos, j = i + d
-    if (j < 0 || j >= c.length) return;
-    [c[i], c[j]] = [c[j], c[i]]
-  }
-  usaOpciones(c: CampoForm) { return c.tipo === 'opcion' || c.tipo === 'casillas' }
-
-  guardarFormulario() {
+  guardarFormulario(b: BorradorFormulario) {
     if (this.guardandoForm) return
-    const f = this.nuevoForm
-    if (f.titulo.trim().length < 3) return this.toast.error('Escribe un título para el formulario')
-    if (!f.campos.length) return this.toast.error('Agrega al menos una pregunta')
-    const campos = f.campos.map(c => ({
-      tipo: c.tipo, etiqueta: c.etiqueta.trim(), requerido: c.requerido, ayuda: c.ayuda?.trim() || undefined, max: c.tipo === 'archivo' ? c.max : undefined,
-      opciones: this.usaOpciones(c) ? (c.opcionesTexto ?? '').split('\n').map(o => o.trim()).filter(Boolean) : undefined
-    }))
     this.guardandoForm = true
-    this.service.crearFormulario({ idexpediente: this.id, titulo: f.titulo.trim(), descripcion: f.descripcion.trim(), campos }).subscribe({
+    this.service.crearFormulario({ idexpediente: this.id, ...b }).subscribe({
       next: () => { this.guardandoForm = false; this.constructorAbierto = false; this.toast.success('Formulario creado. Ahora genera su URL.'); this.cargarFormularios() },
       error: (err) => { this.guardandoForm = false; this.toast.error(err.error?.message?.trim() || 'No se pudo crear el formulario') }
+    })
+  }
+
+  asignarPlantilla() {
+    if (!this.plantillaElegida || this.asignando) return
+    this.asignando = true
+    this.service.asignarPlantilla(this.plantillaElegida, { idexpediente: this.id, generarUrl: true, dias: this.diasUrl }).subscribe({
+      next: () => { this.asignando = false; this.plantillaElegida = null; this.toast.success('Formulario asignado. La URL está lista para enviar.'); this.cargarFormularios() },
+      error: (err) => { this.asignando = false; this.toast.error(err.error?.message?.trim() || 'No se pudo asignar la plantilla') }
+    })
+  }
+
+  guardarComoPlantilla(f: Formulario) {
+    this.service.formularioAPlantilla(f.id).subscribe({
+      next: () => { this.toast.success('Guardado como plantilla. Búscalo en el menú Formularios.'); this.cargarFormularios() },
+      error: (err) => this.toast.error(err.error?.message?.trim() || 'No se pudo guardar como plantilla')
     })
   }
 
