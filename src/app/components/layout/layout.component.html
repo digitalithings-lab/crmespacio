@@ -46,13 +46,13 @@
       </button>
     </header>
 
-    <main class="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-8">
+    <main class="mx-auto w-full min-w-0 max-w-7xl flex-1 overflow-x-clip p-4 sm:p-8">
       <router-outlet></router-outlet>
     </main>
   </div>
 
   <!-- Nota flotante en todas las páginas -->
   <app-nota-flotante></app-nota-flotante>
-  <!-- Burbuja de recordatorios: solo se muestra en el dashboard -->
-  <app-recordatorios *ngIf="mostrarRecordatorios$ | async"></app-recordatorios>
+  <!-- Burbuja de recordatorios en todas las páginas -->
+  <app-recordatorios></app-recordatorios>
 </div>

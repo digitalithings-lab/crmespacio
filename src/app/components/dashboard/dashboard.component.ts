@@ -29,16 +29,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(private service: ServiceclientesService, private toast: ToastService) { }
 
   ngOnInit(): void {
-    this.service.mostrarRecordatorios.next(true)
     this.datos()
     // Si guardas una nota desde el botón flotante, el resumen se actualiza solo
     this.sub = this.service.notasActualizadas$.subscribe(() => this.datos(false))
   }
 
-  ngOnDestroy(): void {
-    this.service.mostrarRecordatorios.next(false)
-    this.sub?.unsubscribe()
-  }
+  ngOnDestroy(): void { this.sub?.unsubscribe() }
 
   datos(mostrarSkeleton = true) {
     if (mostrarSkeleton) this.cargando = true
