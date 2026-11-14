@@ -1,6 +1,6 @@
 import { Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Archivo, Cliente, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
+import { Archivo, Cliente, Formulario, Nota, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { claseTipo, etiquetaTipo, opcionesCliente, principalDe } from 'src/app/utils/tipos';
 import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ToastService } from 'src/app/services/toast.service';
@@ -16,11 +16,14 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
   // En la videollamada se abre como panel lateral (sin tapar el video) y no se cierra al guardar
   @Input() lateral = false
 
-  public pestana: 'nota' | 'notas' | 'expediente' = 'nota'
+  public pestana: 'nota' | 'notas' | 'expediente' | 'formularios' = 'nota'
   public notas: Nota[] = []
   public cargandoNotas = false
   public archivos: Archivo[] = []
   public personas: Cliente[] = []
+  // Formularios del cliente, con lo que respondió (en una pareja, uno por persona)
+  public formularios: Formulario[] = []
+  public cargandoFormularios = false
   public cargandoExpediente = false
 
   public abierto = false
@@ -77,6 +80,7 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
 
   private cargarDatos() {
     this.cargarNotas()
+    this.cargarFormularios()
     const id = this.idexpediente
     if (!id) { this.personas = []; this.archivos = []; return }
     this.cargandoExpediente = true
@@ -92,6 +96,24 @@ export class NotaFlotanteComponent implements OnInit, OnDestroy {
       next: (resp) => { this.archivos = resp.data ?? [] },
       error: () => { this.archivos = [] }
     })
+  }
+
+  cargarFormularios() {
+    const id = this.idexpediente
+    if (!id) { this.formularios = []; return }
+    this.cargandoFormularios = true
+    this.service.listarFormularios(id, true).subscribe({
+      next: (resp) => { this.formularios = resp.data ?? []; this.cargandoFormularios = false },
+      error: () => { this.cargandoFormularios = false }
+    })
+  }
+
+  get respondidos(): number { return this.formularios.filter(f => f.estado === 'enviado').length }
+  get esParejaForm(): boolean { return new Set(this.formularios.map(f => f.idexpediente)).size > 1 }
+  valorRespuesta(v: any): string { return Array.isArray(v) ? v.join(', ') : v === null || v === undefined ? '—' : String(v) }
+  etiquetaEstadoForm(e: string): string { return ({ borrador: 'Sin URL', abierto: 'Esperando respuesta', enviado: 'Respondido', cerrado: 'Cerrado', vencido: 'Enlace vencido' } as any)[e] ?? e }
+  claseEstadoForm(e: string): string {
+    return e === 'enviado' ? 'bg-emerald-100 text-emerald-800' : e === 'abierto' ? 'bg-sky-100 text-sky-800' : e === 'vencido' ? 'bg-amber-100 text-amber-800' : 'bg-zinc-100 text-zinc-600'
   }
 
   cargarNotas() {

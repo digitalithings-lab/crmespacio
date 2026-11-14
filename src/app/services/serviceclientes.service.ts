@@ -107,6 +107,8 @@ export interface Formulario {
   expira_en: string | null; respondido_en: string | null; fecha_creacion: string; url: string | null; archivos: number
   // Persona a quien pertenece (en una pareja, cada una tiene su propio formulario)
   cliente_nombre?: string; cliente_apellido?: string; cliente_telefono?: string
+  // Lo que respondió (solo si se pidió con respuestas=true y el formulario ya fue respondido)
+  respuestas?: { etiqueta: string; tipo: string; valor: any; archivos: { documento: string; url: string | null }[] }[]
 }
 
 export interface Plantilla { id: string; titulo: string; descripcion: string | null; campos: CampoForm[]; fecha_creacion: string; actualizada: string }
@@ -209,7 +211,9 @@ export class ServiceclientesService {
 
   // ---- Formularios ----
   crearFormulario(data: any): Observable<any> { return this.http.post<any>(`${api}/formularios`, data) }
-  listarFormularios(idexpediente: string): Observable<any> { return this.http.get<any>(`${api}/formularios/${idexpediente}`) }
+  listarFormularios(idexpediente: string, conRespuestas = false): Observable<any> {
+    return this.http.get<any>(`${api}/formularios/${idexpediente}`, conRespuestas ? { params: { respuestas: '1' } } : {})
+  }
   generarUrlFormulario(id: string, dias: number): Observable<any> { return this.http.post<any>(`${api}/formularios/${id}/url`, { dias }) }
   cerrarFormulario(id: string): Observable<any> { return this.http.post<any>(`${api}/formularios/${id}/cerrar`, {}) }
   duplicarFormulario(id: string): Observable<any> { return this.http.post<any>(`${api}/formularios/${id}/duplicar`, {}) }

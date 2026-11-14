@@ -124,7 +124,7 @@ Las notas son el registro de cada sesión. Puedes escribir una desde la pestaña
 ![La ventana de nueva nota, que se abre con el botón rojo.](manual-img/27-nueva-nota.jpg)
 *La ventana de nueva nota, que se abre con el botón rojo.*
 
-1. Tres pestañas: Nueva (escribir), Anteriores (las notas del cliente) y Expediente (sus datos y archivos).
+1. Pestañas: Nueva (escribir), Anteriores (las notas del cliente), Expediente (sus datos y archivos) y Formularios (lo que respondió).
 2. Elige el cliente. Si estás dentro de su expediente, ya viene elegido.
 3. Guardar nota.
 
@@ -172,7 +172,8 @@ Si confirmas una cita virtual desde la Agenda, el sistema crea la reunión por t
 
 - Los botones de abajo apagan o encienden el micrófono y la cámara, comparten tu pantalla y salen de la llamada.
 - Tu propio recuadro no reproduce tu voz. Si oyes eco, usa audífonos.
-- El botón del lápiz abre un **panel lateral** sin tapar el video, con tres pestañas: **Nueva** (escribir una nota), **Anteriores** (las notas del cliente) y **Expediente** (sus datos y archivos). Así tienes todo a mano mientras atiendes.
+- El botón del lápiz abre un **panel lateral** sin tapar el video, con cuatro pestañas: **Nueva** (escribir una nota), **Anteriores** (las notas del cliente), **Expediente** (sus datos y archivos) y **Formularios** (lo que el paciente respondió, con sus fotos). Así tienes todo a mano mientras atiendes.
+- Si le pides al paciente que llene un formulario durante la llamada, pulsa **Actualizar** en la pestaña **Formularios** para ver sus respuestas en cuanto las envíe. En una pareja ves el formulario de cada persona, con su nombre.
 - La imagen se envía en alta definición. Si la conexión de alguien es débil, el navegador baja la calidad solo.
 - Si una persona está en datos móviles y no se conecta, el sistema usa un servidor de apoyo automáticamente.
 
