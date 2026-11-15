@@ -53,14 +53,14 @@
     <p class="mt-1 text-xs text-zinc-500">Las horas libres se calculan solas a partir de este horario, la duración de la sesión y las citas ya reservadas.</p>
     <div class="mt-4 divide-y divide-zinc-100">
       <div *ngFor="let d of semana" class="flex flex-wrap items-start gap-3 py-3">
-        <p class="w-24 shrink-0 pt-2 text-sm font-semibold">{{ d.nombre }}</p>
-        <div class="flex-1 space-y-2">
+        <p class="w-full shrink-0 text-sm font-semibold sm:w-24 sm:pt-2">{{ d.nombre }}</p>
+        <div class="min-w-0 flex-1 space-y-2">
           <p *ngIf="d.rangos.length === 0" class="pt-2 text-sm text-zinc-400">Sin atención</p>
           <div *ngFor="let r of d.rangos; let i = index" class="flex items-center gap-2">
-            <input [name]="'ini' + d.dia + '-' + i" [(ngModel)]="r.inicio" type="time" [attr.aria-label]="'Desde, ' + d.nombre" class="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            <input [name]="'ini' + d.dia + '-' + i" [(ngModel)]="r.inicio" type="time" [attr.aria-label]="'Desde, ' + d.nombre" class="min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm sm:flex-none focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
             <span class="text-zinc-400">a</span>
-            <input [name]="'fin' + d.dia + '-' + i" [(ngModel)]="r.fin" type="time" [attr.aria-label]="'Hasta, ' + d.nombre" class="rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
-            <button type="button" (click)="quitarRango(d, i)" aria-label="Quitar horario" class="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-red-50 hover:text-red-600"><i class="ph ph-trash text-base"></i></button>
+            <input [name]="'fin' + d.dia + '-' + i" [(ngModel)]="r.fin" type="time" [attr.aria-label]="'Hasta, ' + d.nombre" class="min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm sm:flex-none focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            <button type="button" (click)="quitarRango(d, i)" aria-label="Quitar horario" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-red-50 hover:text-red-600"><i class="ph ph-trash text-base"></i></button>
           </div>
         </div>
         <button type="button" (click)="agregarRango(d)" class="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95"><i class="ph ph-plus"></i> Agregar horario</button>
