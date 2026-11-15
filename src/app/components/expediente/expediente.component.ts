@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { Archivo, Billetera, Cliente, Cobro, Formulario, Nota, Plantilla, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ServicesalaService } from 'src/app/services/servicesala.service';
-import { claseEstado, claseTipo, detalleEstado, etiquetaEstado, etiquetaTipo, nombreGrupo } from 'src/app/utils/tipos';
+import { claseEstado, claseTipo, TIPOS, detalleEstado, etiquetaEstado, etiquetaTipo, nombreGrupo } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 import { BorradorFormulario, modeloDatos } from '../constructor-formulario/constructor-formulario.component';
 
@@ -424,6 +424,48 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   }
 
   nombreGrupo() { return nombreGrupo(this.personas) }
+
+  // ---- Editar los datos de una persona y corregir el tipo de cliente ----
+  public editando: string | null = null  // idexpediente de la persona que se está editando
+  public formEdicion = { nombre: '', apellido: '', correo: '', cedula: '', telefono: '', edad: '' as string | number }
+  public guardandoEdicion = false
+  public tipos = TIPOS
+  public cambiandoTipo = false
+  public tipoNuevo = ''
+
+  editar(p: Cliente) {
+    this.editando = p.idexpediente
+    this.formEdicion = {
+      nombre: p.nombre ?? '', apellido: p.apellido === '-' ? '' : (p.apellido ?? ''),
+      correo: p.correo ?? '', cedula: p.cedula ?? '', telefono: p.telefono ?? '', edad: p.edad ?? ''
+    }
+  }
+
+  guardarEdicion(p: Cliente) {
+    if (this.guardandoEdicion) return
+    const f = this.formEdicion
+    this.guardandoEdicion = true
+    this.service.editarCliente(p.idexpediente, {
+      nombre: f.nombre, apellido: f.apellido, correo: f.correo, cedula: f.cedula, telefono: f.telefono,
+      edad: f.edad === '' ? 0 : Number(f.edad)
+    }).subscribe({
+      next: () => { this.guardandoEdicion = false; this.editando = null; this.toast.success('Datos guardados'); this.cargarCliente() },
+      error: (err) => { this.guardandoEdicion = false; this.toast.error(err.error?.message?.trim() || 'No se pudieron guardar los datos') }
+    })
+  }
+
+  abrirCambioTipo() { this.tipoNuevo = this.cliente?.tipo ?? ''; this.cambiandoTipo = true }
+
+  guardarTipo() {
+    const c = this.cliente
+    if (!c || this.guardandoEdicion) return
+    if (this.tipoNuevo === c.tipo) { this.cambiandoTipo = false; return }
+    this.guardandoEdicion = true
+    this.service.editarCliente(c.idexpediente, { tipo: this.tipoNuevo }).subscribe({
+      next: () => { this.guardandoEdicion = false; this.cambiandoTipo = false; this.toast.success('Tipo de cliente actualizado'); this.cargarCliente() },
+      error: (err) => { this.guardandoEdicion = false; this.toast.error(err.error?.message?.trim() || 'No se pudo cambiar el tipo') }
+    })
+  }
 
 
   icono(nombre: string) { return iconoArchivo(nombre) }

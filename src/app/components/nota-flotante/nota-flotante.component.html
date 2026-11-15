@@ -20,21 +20,21 @@
     </div>
 
     <!-- Pestañas -->
-    <div class="flex gap-1 border-b border-zinc-100 px-3" role="tablist">
-      <button type="button" role="tab" [attr.aria-selected]="pestana === 'nota'" (click)="pestana = 'nota'" class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'nota' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
+    <div class="flex gap-1 overflow-x-auto border-b border-zinc-100 px-3" role="tablist">
+      <button type="button" role="tab" [attr.aria-selected]="pestana === 'nota'" (click)="pestana = 'nota'" class="relative flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'nota' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
         <i class="ph ph-note-pencil text-base"></i> Nueva
         <span class="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-700 transition-transform" [ngClass]="pestana === 'nota' ? 'scale-x-100' : 'scale-x-0'"></span>
       </button>
-      <button type="button" role="tab" [attr.aria-selected]="pestana === 'notas'" (click)="pestana = 'notas'" class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'notas' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
+      <button type="button" role="tab" [attr.aria-selected]="pestana === 'notas'" (click)="pestana = 'notas'" class="relative flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'notas' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
         <i class="ph ph-notebook text-base"></i> Anteriores
         <span class="rounded-full bg-zinc-100 px-1.5 text-xs text-zinc-600">{{ notas.length }}</span>
         <span class="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-700 transition-transform" [ngClass]="pestana === 'notas' ? 'scale-x-100' : 'scale-x-0'"></span>
       </button>
-      <button type="button" role="tab" [attr.aria-selected]="pestana === 'expediente'" (click)="pestana = 'expediente'" class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'expediente' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
+      <button type="button" role="tab" [attr.aria-selected]="pestana === 'expediente'" (click)="pestana = 'expediente'" class="relative flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'expediente' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
         <i class="ph ph-identification-card text-base"></i> Expediente
         <span class="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-700 transition-transform" [ngClass]="pestana === 'expediente' ? 'scale-x-100' : 'scale-x-0'"></span>
       </button>
-      <button type="button" role="tab" [attr.aria-selected]="pestana === 'formularios'" (click)="pestana = 'formularios'" class="relative flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'formularios' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
+      <button type="button" role="tab" [attr.aria-selected]="pestana === 'formularios'" (click)="pestana = 'formularios'" class="relative flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-sm font-semibold transition" [ngClass]="pestana === 'formularios' ? 'text-brand-700' : 'text-zinc-500 hover:text-zinc-800'">
         <i class="ph ph-list-checks text-base"></i> Formularios
         <span *ngIf="respondidos > 0" class="rounded-full bg-emerald-100 px-1.5 text-xs text-emerald-800">{{ respondidos }}</span>
         <span class="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-700 transition-transform" [ngClass]="pestana === 'formularios' ? 'scale-x-100' : 'scale-x-0'"></span>

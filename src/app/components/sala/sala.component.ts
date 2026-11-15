@@ -15,6 +15,7 @@ interface Participante {
   reconectando: boolean   // la conexión se cayó un momento: se muestra un aviso sin tapar el video
   tieneVideo: boolean     // llegan imágenes de su cámara (si no, se muestra su inicial)
   reintentando: boolean
+  compartiendo: boolean   // está compartiendo su pantalla: se muestra completa, sin recortar
 }
 
 type Fase = 'cargando' | 'noexiste' | 'expirada' | 'lobby' | 'llamada' | 'fin'
@@ -154,24 +155,45 @@ export class SalaComponent implements OnInit, OnDestroy {
 
   async alternarPantalla() {
     if (this.compartiendo) { this.detenerPantalla(); return }
+    if (!navigator.mediaDevices?.getDisplayMedia) { this.toast.info('Tu navegador no permite compartir pantalla'); return }
     try {
-      const disp = await navigator.mediaDevices.getDisplayMedia({ video: true })
+      // 15 fps bastan para mostrar documentos y gastan poco ancho de banda; "exclude" evita ofrecer esta misma pestaña (haría un espejo infinito)
+      const disp = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: { ideal: 15, max: 30 } },
+        audio: false,
+        selfBrowserSurface: 'exclude',
+        surfaceSwitching: 'include'
+      } as any)
       const track = disp.getVideoTracks()[0]
+      if (!track) return
+      // "detail": el navegador prioriza la nitidez del texto sobre la fluidez
+      try { (track as any).contentHint = 'detail' } catch { /* no disponible */ }
       this.pantalla = disp
       this.compartiendo = true
       this.vistaLocal = new MediaStream([track])
+      track.onended = () => this.zone.run(() => this.detenerPantalla())
       await this.reemplazarVideo(track)
-      track.onended = () => this.detenerPantalla()
+      this.anunciarPantalla(true)
     } catch { /* el usuario canceló */ }
   }
 
   private async detenerPantalla() {
-    this.pantalla?.getTracks().forEach(t => t.stop())
+    if (!this.compartiendo) return
+    this.pantalla?.getTracks().forEach(t => { t.onended = null; t.stop() })
     this.pantalla = null
     this.compartiendo = false
     this.vistaLocal = this.local ? this.soloVideo(this.local) : null
+    this.anunciarPantalla(false)
     await this.reemplazarVideo(this.local?.getVideoTracks()[0] ?? null)
   }
+
+  // Avisa a los demás para que muestren mi pantalla completa (sin recortar) y más grande
+  private anunciarPantalla(activa: boolean) {
+    for (const p of this.participantes) this.enviar('pantalla', p.id, { activa })
+  }
+
+  /** Hay alguien compartiendo pantalla (otra persona, no yo) */
+  get hayPantalla(): boolean { return this.participantes.some(p => p.compartiendo) }
 
   private async reemplazarVideo(track: MediaStreamTrack | null) {
     for (const p of this.participantes) {
@@ -287,6 +309,11 @@ export class SalaComponent implements OnInit, OnDestroy {
       case 'leave':
         this.quitar(s.de)
         break
+      case 'pantalla': {
+        const p = this.buscar(s.de)
+        if (p) p.compartiendo = !!s.payload?.activa
+        break
+      }
     }
   }
 
@@ -304,7 +331,7 @@ export class SalaComponent implements OnInit, OnDestroy {
   private crearPeer(id: string, nombre: string | undefined, iniciador: boolean): Participante {
     const pc = new RTCPeerConnection(this.rtcConfig)
     const stream = new MediaStream()
-    const p: Participante = { id, nombre: nombre || 'Invitado', stream, pc, conectado: false, iniciador, reconectando: false, tieneVideo: false, reintentando: false }
+    const p: Participante = { id, nombre: nombre || 'Invitado', stream, pc, conectado: false, iniciador, reconectando: false, tieneVideo: false, reintentando: false, compartiendo: false }
     this.participantes = [...this.participantes, p]
 
     // IMPORTANTE: se usa addTrack (no addTransceiver). Así, cuando llega una oferta,
@@ -338,7 +365,11 @@ export class SalaComponent implements OnInit, OnDestroy {
       p.conectado = estado === 'connected'
       p.reconectando = estado === 'disconnected' || estado === 'failed'
 
-      if (estado === 'connected') this.limitarVideo(pc)
+      if (estado === 'connected') {
+        this.limitarVideo(pc)
+        // quien llega cuando ya estoy compartiendo también debe saberlo
+        if (this.compartiendo) this.enviar('pantalla', id, { activa: true })
+      }
       if (estado === 'closed') { this.quitar(id); return }
 
       // En celulares la conexión se cae y vuelve: se intenta recuperar antes de sacar a la persona.
@@ -387,11 +418,13 @@ export class SalaComponent implements OnInit, OnDestroy {
 
   // ================= Presentación =================
   gridClase() {
+    // Con una pantalla compartida: ella arriba, grande; las personas en una fila pequeña debajo
+    if (this.hayPantalla) return 'grid-cols-3 sm:grid-cols-4 grid-rows-[minmax(0,1fr)_7rem]'
     const total = this.participantes.length + 1
-    if (total <= 1) return 'grid-cols-1'
-    if (total === 2) return 'grid-cols-1 md:grid-cols-2'
-    if (total <= 4) return 'grid-cols-1 sm:grid-cols-2'
-    return 'grid-cols-2 lg:grid-cols-3'
+    if (total <= 1) return 'auto-rows-fr grid-cols-1'
+    if (total === 2) return 'auto-rows-fr grid-cols-1 md:grid-cols-2'
+    if (total <= 4) return 'auto-rows-fr grid-cols-1 sm:grid-cols-2'
+    return 'auto-rows-fr grid-cols-2 lg:grid-cols-3'
   }
 
   async copiar() {

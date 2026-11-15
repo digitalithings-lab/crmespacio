@@ -17,19 +17,27 @@
 
 <ng-container *ngIf="cliente">
   <!-- Encabezado del cliente -->
-  <div class="animate-fade-up mt-6 flex flex-wrap items-center gap-5 rounded-2xl border border-zinc-200 bg-white p-6">
+  <div class="animate-fade-up mt-6 flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-5 sm:p-6">
     <div class="flex shrink-0 -space-x-4">
       <div *ngFor="let p of personas" class="flex h-16 w-16 items-center justify-center rounded-full bg-brand-700 text-xl font-extrabold text-white ring-4 ring-white">{{ iniciales(p) }}</div>
     </div>
-    <div class="min-w-0 flex-1">
-      <h1 class="truncate text-2xl font-extrabold tracking-tight">{{ nombreGrupo() }}</h1>
+    <div class="min-w-0 sm:flex-1">
+      <h1 class="break-words text-2xl font-extrabold tracking-tight sm:truncate">{{ nombreGrupo() }}</h1>
       <div class="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(cliente.tipo)">{{ etiquetaTipo(cliente.tipo) }}</span>
+        <span *ngIf="!cambiandoTipo" class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseTipo(cliente.tipo)">{{ etiquetaTipo(cliente.tipo) }}
+          <button type="button" (click)="abrirCambioTipo()" aria-label="Cambiar el tipo de cliente" title="Cambiar el tipo de cliente" class="-mr-1 flex h-5 w-5 items-center justify-center rounded-full transition hover:bg-black/10"><i class="ph ph-pencil-simple text-xs"></i></button></span>
+        <span *ngIf="cambiandoTipo" class="inline-flex flex-wrap items-center gap-1.5">
+          <select [(ngModel)]="tipoNuevo" aria-label="Tipo de cliente" class="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs font-semibold text-zinc-700 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/20">
+            <option *ngFor="let t of tipos" [value]="t.valor">{{ t.etiqueta }}</option>
+          </select>
+          <button type="button" (click)="guardarTipo()" [disabled]="guardandoEdicion" class="rounded-lg bg-brand-700 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-brand-800 disabled:opacity-60">Guardar</button>
+          <button type="button" (click)="cambiandoTipo = false" class="rounded-lg border border-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50">Cancelar</button>
+        </span>
         <span *ngIf="cliente.estado" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" [ngClass]="claseEstado(cliente.estado)" [title]="detalleEstado(cliente)">{{ etiquetaEstado(cliente.estado) }}</span>
         <span>Expediente <strong class="font-semibold text-zinc-700">#{{ cliente.idexpediente | slice:0:8 }}</strong></span>
       </div>
     </div>
-    <button type="button" (click)="nuevaNota()" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+    <button type="button" (click)="nuevaNota()" class="inline-flex w-full items-center justify-center gap-2 rounded-xl sm:w-auto bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
       <i class="ph ph-note-pencil text-base"></i> Nueva nota
     </button>
   </div>
@@ -82,11 +90,34 @@
   <!-- ===== Expediente ===== -->
   <section *ngIf="tab === 'expediente'" role="tabpanel" class="animate-fade-up mt-6">
     <div *ngFor="let p of personas; let i = index" [class.mt-8]="i > 0">
-      <h3 *ngIf="personas.length > 1" class="mb-3 flex items-center gap-2 text-sm font-bold text-zinc-700">
-        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">{{ iniciales(p) }}</span>
-        Persona {{ i + 1 }} · {{ p.nombre }} {{ p.apellido }}
-      </h3>
-      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 class="flex min-w-0 items-center gap-2 text-sm font-bold text-zinc-700">
+          <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-700">{{ iniciales(p) }}</span>
+          <span class="truncate">{{ personas.length > 1 ? 'Persona ' + (i + 1) + ' · ' : '' }}{{ p.nombre }} {{ p.apellido === '-' ? '' : p.apellido }}</span>
+        </h3>
+        <button *ngIf="editando !== p.idexpediente" type="button" (click)="editar(p)" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95"><i class="ph ph-pencil-simple text-sm"></i> Editar datos</button>
+      </div>
+      <form *ngIf="editando === p.idexpediente" #fe="ngForm" (ngSubmit)="guardarEdicion(p)" class="rounded-2xl border border-brand-200 bg-white p-5">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div><label for="e-nombre-{{ i }}" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-400">Nombre</label>
+          <input id="e-nombre-{{ i }}" name="nombre" type="text" required [(ngModel)]="formEdicion.nombre" class="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div><label for="e-apellido-{{ i }}" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-400">Apellido</label>
+          <input id="e-apellido-{{ i }}" name="apellido" type="text" [(ngModel)]="formEdicion.apellido" class="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div><label for="e-correo-{{ i }}" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-400">Correo</label>
+          <input id="e-correo-{{ i }}" name="correo" type="email" required [(ngModel)]="formEdicion.correo" class="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div><label for="e-telefono-{{ i }}" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-400">Teléfono</label>
+          <input id="e-telefono-{{ i }}" name="telefono" type="tel" required [(ngModel)]="formEdicion.telefono" class="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div><label for="e-cedula-{{ i }}" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-400">Cédula</label>
+          <input id="e-cedula-{{ i }}" name="cedula" type="text" required [(ngModel)]="formEdicion.cedula" class="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        <div><label for="e-edad-{{ i }}" class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-zinc-400">Edad</label>
+          <input id="e-edad-{{ i }}" name="edad" type="number" min="0" max="120" inputmode="numeric" [(ngModel)]="formEdicion.edad" class="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
+        </div>
+        <div class="mt-5 flex flex-wrap justify-end gap-2">
+          <button type="button" (click)="editando = null" class="rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50">Cancelar</button>
+          <button type="submit" [disabled]="fe.invalid || guardandoEdicion" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 disabled:cursor-not-allowed disabled:opacity-60"><i class="ph" [ngClass]="guardandoEdicion ? 'ph-spinner animate-spin' : 'ph-floppy-disk'"></i> Guardar cambios</button>
+        </div>
+      </form>
+      <div *ngIf="editando !== p.idexpediente" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div class="rounded-2xl border border-zinc-200 bg-white p-5">
         <p class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-zinc-400"><i class="ph ph-envelope-simple text-base"></i> Correo</p>
         <p class="mt-2 break-all font-semibold">{{ p.correo }}</p>
@@ -287,7 +318,7 @@
           <div class="flex flex-wrap items-start gap-3">
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-center gap-2">
-                <p class="truncate font-semibold">{{ c.concepto }}</p>
+                <p class="break-words font-semibold sm:truncate">{{ c.concepto }}</p>
                 <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold"
                   [ngClass]="c.estado === 'pagado' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'">
                   <i class="ph text-sm" [ngClass]="c.estado === 'pagado' ? 'ph-check-circle' : 'ph-clock'"></i>
