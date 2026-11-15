@@ -4,13 +4,14 @@
     <p class="mt-1 text-sm text-zinc-500">Las citas que llegan de tu sitio web. Toca un día para ver sus citas y una cita para ver al cliente y su billetera.</p>
   </div>
   <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-    <button type="button" (click)="abrirNueva()" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 active:scale-95"><i class="ph ph-plus"></i> Nueva cita</button>
-    <a routerLink="/agenda/ajustes" class="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95"><i class="ph ph-sliders-horizontal"></i> Horarios y precio</a>
-    <button type="button" (click)="hoy()" class="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95">Hoy</button>
-    <div class="flex min-w-0 flex-1 items-center rounded-xl border border-zinc-200 bg-white sm:flex-none">
-      <button type="button" (click)="mover(-1)" aria-label="Mes anterior" class="flex h-10 w-10 items-center justify-center rounded-l-xl text-zinc-600 transition hover:bg-zinc-50"><i class="ph ph-caret-left text-lg"></i></button>
-      <span class="min-w-0 flex-1 text-center sm:min-w-[9.5rem] sm:flex-none text-sm font-bold capitalize">{{ mes | date: 'LLLL yyyy' }}</span>
-      <button type="button" (click)="mover(1)" aria-label="Mes siguiente" class="flex h-10 w-10 items-center justify-center rounded-r-xl text-zinc-600 transition hover:bg-zinc-50"><i class="ph ph-caret-right text-lg"></i></button>
+    <button type="button" (click)="abrirNueva()" class="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 active:scale-95"><i class="ph ph-plus"></i> Nueva cita</button>
+    <a routerLink="/agenda/ajustes" class="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95"><i class="ph ph-sliders-horizontal"></i> Horarios y precio</a>
+    <button type="button" (click)="hoy()" class="shrink-0 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95">Hoy</button>
+    <!-- El mes va en su propia fila en el teléfono: las flechas siempre se ven -->
+    <div class="order-last flex w-full items-center rounded-xl border border-zinc-200 bg-white sm:order-none sm:w-auto">
+      <button type="button" (click)="mover(-1)" aria-label="Mes anterior" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-l-xl text-zinc-600 transition hover:bg-zinc-50 active:bg-zinc-100 sm:h-10 sm:w-10"><i class="ph ph-caret-left text-xl"></i></button>
+      <span class="min-w-0 flex-1 truncate px-2 text-center text-sm font-bold capitalize sm:min-w-[9.5rem] sm:flex-none">{{ mes | date: 'LLLL yyyy' }}</span>
+      <button type="button" (click)="mover(1)" aria-label="Mes siguiente" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-r-xl text-zinc-600 transition hover:bg-zinc-50 active:bg-zinc-100 sm:h-10 sm:w-10"><i class="ph ph-caret-right text-xl"></i></button>
     </div>
   </div>
 </div>
