@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 const api = environment.apiUrl
 
-export type TipoSenal = 'join' | 'leave' | 'offer' | 'answer' | 'ice' | 'pantalla'
+export type TipoSenal = 'join' | 'leave' | 'offer' | 'answer' | 'ice' | 'pantalla' | 'camara'
 
 export interface Senal {
   id: number

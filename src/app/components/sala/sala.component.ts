@@ -16,6 +16,7 @@ interface Participante {
   tieneVideo: boolean     // llegan imágenes de su cámara (si no, se muestra su inicial)
   reintentando: boolean
   compartiendo: boolean   // está compartiendo su pantalla: se muestra completa, sin recortar
+  camaraApagada: boolean  // apagó su cámara: se muestra su inicial en vez de un recuadro negro
 }
 
 type Fase = 'cargando' | 'noexiste' | 'expirada' | 'lobby' | 'llamada' | 'fin'
@@ -147,10 +148,64 @@ export class SalaComponent implements OnInit, OnDestroy {
     this.local?.getAudioTracks().forEach(t => (t.enabled = this.micActivo))
   }
 
-  alternarCamara() {
-    if (!this.tieneVideo) return
-    this.camActivo = !this.camActivo
-    this.local?.getVideoTracks().forEach(t => (t.enabled = this.camActivo))
+  // Apagar la cámara la APAGA de verdad (se suelta el dispositivo: se va la luz y el aviso del navegador),
+  // y a los demás les llega un video negro mínimo mientras se les avisa para que muestren tu inicial.
+  public cambiandoCamara = false
+  private negro: MediaStreamTrack | null = null
+
+  /** Video negro de relleno (320×180, 1 imagen por segundo): consume casi nada y mantiene el canal listo para volver a encender. */
+  private pistaNegra(): MediaStreamTrack {
+    if (this.negro && this.negro.readyState === 'live') return this.negro
+    const lienzo = document.createElement('canvas')
+    lienzo.width = 320; lienzo.height = 180
+    const ctx = lienzo.getContext('2d')
+    if (ctx) { ctx.fillStyle = '#18181b'; ctx.fillRect(0, 0, 320, 180) }
+    this.negro = lienzo.captureStream(1).getVideoTracks()[0]
+    return this.negro
+  }
+
+  /** Lo que se envía como video: tu pantalla, tu cámara o el relleno negro si la apagaste. */
+  private videoParaEnviar(): MediaStreamTrack | null {
+    if (this.compartiendo) return this.pantalla?.getVideoTracks()[0] ?? null
+    if (!this.tieneVideo) return null
+    return (this.camActivo && this.local?.getVideoTracks()[0]) || this.pistaNegra()
+  }
+
+  private anunciarCamara(activa: boolean) {
+    for (const p of this.participantes) this.enviar('camara', p.id, { activa })
+  }
+
+  async alternarCamara() {
+    if (!this.tieneVideo || this.cambiandoCamara) return
+    this.cambiandoCamara = true
+    try {
+      if (this.camActivo) {
+        // Apagar: se suelta la cámara
+        this.local?.getVideoTracks().forEach(t => { t.stop(); this.local?.removeTrack(t) })
+        this.camActivo = false
+        this.vistaLocal = this.local ? this.soloVideo(this.local) : null
+        if (!this.compartiendo) await this.reemplazarVideo(this.pistaNegra())
+        this.anunciarCamara(false)
+      } else {
+        // Encender: se vuelve a pedir la cámara (HD, y si no da, lo que tenga)
+        let pista: MediaStreamTrack | null = null
+        for (const video of [{ width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 }, facingMode: 'user' } as MediaTrackConstraints, true as const]) {
+          try { pista = (await navigator.mediaDevices.getUserMedia({ video })).getVideoTracks()[0]; if (pista) break } catch { /* prueba la siguiente */ }
+        }
+        if (!pista) { this.toast.error('No se pudo volver a encender la cámara. Revisa los permisos del navegador.'); return }
+        if (!this.local) this.local = new MediaStream()
+        this.local.addTrack(pista)
+        this.camActivo = true
+        this.vistaLocal = this.soloVideo(this.local)
+        if (!this.compartiendo) {
+          await this.reemplazarVideo(pista)
+          for (const p of this.participantes) this.limitarVideo(p.pc)
+        }
+        this.anunciarCamara(true)
+      }
+    } finally {
+      this.cambiandoCamara = false
+    }
   }
 
   async alternarPantalla() {
@@ -184,7 +239,7 @@ export class SalaComponent implements OnInit, OnDestroy {
     this.compartiendo = false
     this.vistaLocal = this.local ? this.soloVideo(this.local) : null
     this.anunciarPantalla(false)
-    await this.reemplazarVideo(this.local?.getVideoTracks()[0] ?? null)
+    await this.reemplazarVideo(this.videoParaEnviar())
   }
 
   // Avisa a los demás para que muestren mi pantalla completa (sin recortar) y más grande
@@ -242,6 +297,8 @@ export class SalaComponent implements OnInit, OnDestroy {
     this.pantalla = null
     this.compartiendo = false
     if (soltarMedia) {
+      this.negro?.stop()
+      this.negro = null
       this.local?.getTracks().forEach(t => t.stop())
       this.local = null
       this.vistaLocal = null
@@ -309,6 +366,11 @@ export class SalaComponent implements OnInit, OnDestroy {
       case 'leave':
         this.quitar(s.de)
         break
+      case 'camara': {
+        const p = this.buscar(s.de)
+        if (p) p.camaraApagada = s.payload?.activa === false
+        break
+      }
       case 'pantalla': {
         const p = this.buscar(s.de)
         if (p) p.compartiendo = !!s.payload?.activa
@@ -331,13 +393,13 @@ export class SalaComponent implements OnInit, OnDestroy {
   private crearPeer(id: string, nombre: string | undefined, iniciador: boolean): Participante {
     const pc = new RTCPeerConnection(this.rtcConfig)
     const stream = new MediaStream()
-    const p: Participante = { id, nombre: nombre || 'Invitado', stream, pc, conectado: false, iniciador, reconectando: false, tieneVideo: false, reintentando: false, compartiendo: false }
+    const p: Participante = { id, nombre: nombre || 'Invitado', stream, pc, conectado: false, iniciador, reconectando: false, tieneVideo: false, reintentando: false, compartiendo: false, camaraApagada: false }
     this.participantes = [...this.participantes, p]
 
     // IMPORTANTE: se usa addTrack (no addTransceiver). Así, cuando llega una oferta,
     // el navegador reutiliza estos canales y nuestro audio y video SÍ se envían en la respuesta.
     const audio = this.local?.getAudioTracks()[0]
-    const video = this.compartiendo ? this.pantalla?.getVideoTracks()[0] : this.local?.getVideoTracks()[0]
+    const video = this.videoParaEnviar()
     const flujo = this.local ?? new MediaStream()
     if (audio) pc.addTrack(audio, flujo)
     if (video) pc.addTrack(video, flujo)
@@ -369,6 +431,7 @@ export class SalaComponent implements OnInit, OnDestroy {
         this.limitarVideo(pc)
         // quien llega cuando ya estoy compartiendo también debe saberlo
         if (this.compartiendo) this.enviar('pantalla', id, { activa: true })
+        if (this.tieneVideo && !this.camActivo) this.enviar('camara', id, { activa: false })
       }
       if (estado === 'closed') { this.quitar(id); return }
 
