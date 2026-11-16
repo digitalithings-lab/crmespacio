@@ -17,6 +17,7 @@ interface Participante {
   reintentando: boolean
   compartiendo: boolean   // está compartiendo su pantalla: se muestra completa, sin recortar
   camaraApagada: boolean  // apagó su cámara: se muestra su inicial en vez de un recuadro negro
+  hablando: boolean       // se oye su micrófono: su recuadro se pone verde
 }
 
 type Fase = 'cargando' | 'noexiste' | 'expirada' | 'lobby' | 'llamada' | 'fin'
@@ -257,11 +258,82 @@ export class SalaComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  // ================= Quién está hablando =================
+  // Se mide el volumen de cada micrófono (el tuyo y el de los demás); si hay voz, el recuadro se pone verde.
+  public yoHablando = false
+  private audioCtx: AudioContext | null = null
+  private medidores = new Map<string, { fuente: MediaStreamAudioSourceNode; analizador: AnalyserNode; datos: Uint8Array; ultimaVoz: number }>()
+  private relojVoz: any = null
+  private static readonly UMBRAL_VOZ = 0.03   // volumen mínimo (0 a 1) para considerar que hablan
+  private static readonly RETENCION_MS = 450  // sigue verde un instante después de la última sílaba, para que no parpadee
+
+  private medir(clave: string, pista?: MediaStreamTrack | null) {
+    this.dejarDeMedir(clave)
+    if (!pista || pista.kind !== 'audio') return
+    try {
+      const Ctx = window.AudioContext || (window as any).webkitAudioContext
+      if (!Ctx) return
+      this.audioCtx ??= new Ctx()
+      if (this.audioCtx.state === 'suspended') this.audioCtx.resume().catch(() => { /* se reanuda con el siguiente gesto */ })
+      const analizador = this.audioCtx.createAnalyser()
+      analizador.fftSize = 512
+      analizador.smoothingTimeConstant = 0.3
+      const fuente = this.audioCtx.createMediaStreamSource(new MediaStream([pista]))
+      fuente.connect(analizador) // sin conectar a la salida: no se oye nada extra
+      this.medidores.set(clave, { fuente, analizador, datos: new Uint8Array(analizador.fftSize), ultimaVoz: 0 })
+      this.iniciarRelojVoz()
+    } catch { /* sin Web Audio: simplemente no se marca quién habla */ }
+  }
+
+  private dejarDeMedir(clave: string) {
+    const m = this.medidores.get(clave)
+    if (!m) return
+    try { m.fuente.disconnect() } catch { /* ya estaba suelto */ }
+    this.medidores.delete(clave)
+  }
+
+  private iniciarRelojVoz() {
+    if (this.relojVoz) return
+    // Fuera de la zona de Angular: solo se actualiza la pantalla cuando alguien empieza o deja de hablar
+    this.zone.runOutsideAngular(() => {
+      this.relojVoz = setInterval(() => {
+        const ahora = Date.now()
+        const cambios: { clave: string; hablando: boolean }[] = []
+        this.medidores.forEach((m, clave) => {
+          m.analizador.getByteTimeDomainData(m.datos as any)
+          let suma = 0
+          for (let i = 0; i < m.datos.length; i++) { const v = (m.datos[i] - 128) / 128; suma += v * v }
+          if (Math.sqrt(suma / m.datos.length) > SalaComponent.UMBRAL_VOZ) m.ultimaVoz = ahora
+          const hablando = ahora - m.ultimaVoz < SalaComponent.RETENCION_MS
+          const actual = clave === 'yo' ? this.yoHablando : !!this.buscar(clave)?.hablando
+          if (hablando !== actual) cambios.push({ clave, hablando })
+        })
+        if (cambios.length) {
+          this.zone.run(() => cambios.forEach(c => {
+            if (c.clave === 'yo') this.yoHablando = c.hablando
+            else { const p = this.buscar(c.clave); if (p) p.hablando = c.hablando }
+          }))
+        }
+      }, 120)
+    })
+  }
+
+  private detenerMedidores() {
+    clearInterval(this.relojVoz)
+    this.relojVoz = null
+    this.medidores.forEach((_m, clave) => this.dejarDeMedir(clave))
+    this.audioCtx?.close().catch(() => { /* ya estaba cerrado */ })
+    this.audioCtx = null
+    this.yoHablando = false
+  }
+
   // ================= Unirse / salir =================
   async unirse() {
     if (!this.nombre.trim()) { this.toast.info('Escribe tu nombre para entrar'); return }
     this.fase = 'llamada'
     this.activo = true
+    this.medir('yo', this.local?.getAudioTracks()[0])
     try {
       const resp = await firstValueFrom(this.service.enviarSenal(this.codigo, {
         de: this.yo, tipo: 'join', payload: { nombre: this.nombre.trim() }
@@ -293,6 +365,7 @@ export class SalaComponent implements OnInit, OnDestroy {
     this.participantes.forEach(p => p.pc.close())
     this.participantes = []
     this.pendientes.clear()
+    this.detenerMedidores()
     this.pantalla?.getTracks().forEach(t => t.stop())
     this.pantalla = null
     this.compartiendo = false
@@ -393,7 +466,7 @@ export class SalaComponent implements OnInit, OnDestroy {
   private crearPeer(id: string, nombre: string | undefined, iniciador: boolean): Participante {
     const pc = new RTCPeerConnection(this.rtcConfig)
     const stream = new MediaStream()
-    const p: Participante = { id, nombre: nombre || 'Invitado', stream, pc, conectado: false, iniciador, reconectando: false, tieneVideo: false, reintentando: false, compartiendo: false, camaraApagada: false }
+    const p: Participante = { id, nombre: nombre || 'Invitado', stream, pc, conectado: false, iniciador, reconectando: false, tieneVideo: false, reintentando: false, compartiendo: false, camaraApagada: false, hablando: false }
     this.participantes = [...this.participantes, p]
 
     // IMPORTANTE: se usa addTrack (no addTransceiver). Así, cuando llega una oferta,
@@ -413,6 +486,7 @@ export class SalaComponent implements OnInit, OnDestroy {
     // Los eventos de la conexión no pasan por la zona de Angular: se envuelven para que la pantalla se actualice.
     pc.addEventListener('track', (e) => this.zone.run(() => {
       if (!stream.getTracks().includes(e.track)) stream.addTrack(e.track)
+      if (e.track.kind === 'audio') this.medir(id, e.track)
       if (e.track.kind === 'video') {
         p.tieneVideo = !e.track.muted
         e.track.addEventListener('unmute', () => this.zone.run(() => (p.tieneVideo = true)))
@@ -475,6 +549,7 @@ export class SalaComponent implements OnInit, OnDestroy {
     const p = this.buscar(id)
     if (!p) return
     p.pc.close()
+    this.dejarDeMedir(id)
     this.pendientes.delete(id)
     this.participantes = this.participantes.filter(x => x.id !== id)
   }

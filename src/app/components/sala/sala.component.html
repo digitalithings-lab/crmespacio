@@ -75,7 +75,8 @@
     <main class="min-h-0 flex-1 px-4 pb-4 sm:px-6">
       <div class="grid h-full gap-3" [ngClass]="gridClase()">
         <!-- Yo -->
-        <div class="animate-scale-in relative overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10">
+        <div class="animate-scale-in relative overflow-hidden rounded-2xl bg-zinc-900 transition-shadow duration-150"
+          [ngClass]="yoHablando && micActivo ? 'ring-4 ring-emerald-400 shadow-lg shadow-emerald-500/30' : 'ring-1 ring-white/10'">
           <!-- Mientras comparto no se muestra mi pantalla en mi propio recuadro: haría un espejo infinito -->
           <div *ngIf="compartiendo" class="flex h-full w-full flex-col items-center justify-center gap-1.5 overflow-hidden bg-brand-900/40 p-2 text-center leading-tight">
             <i class="ph ph-monitor-arrow-up text-3xl text-brand-300"></i>
@@ -91,8 +92,8 @@
         </div>
 
         <!-- Los demás -->
-        <div *ngFor="let p of participantes" class="animate-scale-in relative min-h-0 overflow-hidden rounded-2xl bg-zinc-900 ring-1 ring-white/10"
-          [ngClass]="p.compartiendo ? 'order-first col-span-full bg-black' : ''">
+        <div *ngFor="let p of participantes" class="animate-scale-in relative min-h-0 overflow-hidden rounded-2xl bg-zinc-900 transition-shadow duration-150"
+          [ngClass]="[p.compartiendo ? 'order-first col-span-full bg-black' : '', p.hablando ? 'ring-4 ring-emerald-400 shadow-lg shadow-emerald-500/30' : 'ring-1 ring-white/10']">
           <video [srcObject]="p.stream" autoplay playsinline (playing)="p.tieneVideo = true" class="h-full w-full" [ngClass]="p.compartiendo ? 'object-contain' : 'object-cover'"></video>
           <!-- Solo se tapa el video si no llegan imágenes (su cámara está apagada o aún no empieza) -->
           <div *ngIf="!p.tieneVideo || (p.camaraApagada && !p.compartiendo)" class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-zinc-900">
