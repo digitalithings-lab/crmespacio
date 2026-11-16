@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { authGuard } from './guards/auth.guard';
 import { LoginComponent } from './components/login/login.component';
 import { CrearcuentaComponent } from './components/crearcuenta/crearcuenta.component';
 import { LayoutComponent } from './components/layout/layout.component';
@@ -19,7 +20,8 @@ import { BibliotecaPersonalComponent } from './components/biblioteca-personal/bi
 const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'crearcuenta', component: CrearcuentaComponent },
+  // Crear cuentas del equipo: solo con sesión iniciada
+  { path: 'crearcuenta', component: CrearcuentaComponent, canActivate: [authGuard] },
   // La sala es pública: quien recibe el enlace entra sin iniciar sesión
   { path: 'sala/:codigo', component: SalaComponent },
   // Formulario público: quien recibe el enlace lo llena sin iniciar sesión
@@ -27,6 +29,7 @@ const routes: Routes = [
   {
     path: '',
     component: LayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'agenda', component: AgendaComponent },

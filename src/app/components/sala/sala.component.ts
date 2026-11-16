@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { Senal, ServicesalaService } from 'src/app/services/servicesala.service';
 import { ToastService } from 'src/app/services/toast.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 interface Participante {
   id: string
@@ -46,7 +47,7 @@ export class SalaComponent implements OnInit, OnDestroy {
   public copiado = false
 
   // Solo quien inició sesión en el panel ve el botón de notas (los invitados no)
-  public esAdmin = !!localStorage.getItem('correo')
+  public esAdmin = this.auth.sesionValida
   public idexpediente: string | null = null
 
   private yo = this.nuevoId()
@@ -68,7 +69,8 @@ export class SalaComponent implements OnInit, OnDestroy {
     private service: ServicesalaService,
     private clientes: ServiceclientesService,
     private toast: ToastService,
-    private zone: NgZone
+    private zone: NgZone,
+    private auth: AuthService
   ) { }
 
   ngOnInit(): void {

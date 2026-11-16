@@ -2,7 +2,8 @@ import { LOCALE_ID, NgModule } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -60,7 +61,10 @@ registerLocaleData(localeEs)
 
 
   ],
-  providers: [{ provide: LOCALE_ID, useValue: 'es' }],
+  providers: [
+    { provide: LOCALE_ID, useValue: 'es' },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

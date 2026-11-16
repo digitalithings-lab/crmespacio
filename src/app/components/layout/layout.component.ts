@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-layout',
@@ -14,7 +15,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
  
   private sub?: Subscription
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private auth: AuthService) {}
 
   ngOnInit(): void {
     // En el teléfono el menú se cierra solo al llegar a otra página
@@ -30,6 +31,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   cerrarSesion() {
-    ['nombre', 'apellido', 'correo'].forEach(k => localStorage.removeItem(k))
+    this.auth.cerrar()
   }
 }

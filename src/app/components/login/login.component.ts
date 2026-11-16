@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ServiceadminService } from 'src/app/services/serviceadmin.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -13,10 +14,12 @@ export class LoginComponent implements OnInit {
   public password:any
   public data:any
   public cargando = false
-  constructor(private service:ServiceadminService,private route: Router,private toast: ToastService){
+  constructor(private service:ServiceadminService,private route: Router,private toast: ToastService, private auth: AuthService){
 
   }
   ngOnInit(): void {
+    // Si ya hay una sesión vigente, directo al panel
+    if (this.auth.sesionValida) this.route.navigate(['/dashboard'])
   }
 
 
@@ -31,13 +34,15 @@ export class LoginComponent implements OnInit {
   this.service.login(data).subscribe({
     next: (resp:any) => {
       this.cargando = false
-      console.log(resp);
       const data = resp['data']
-      if(resp.ok === true){
+      if(resp.ok === true && resp.token){
+        this.auth.guardar(resp.token)
         this.route.navigate(['/dashboard'])
         localStorage.setItem('nombre',data.nombre)
         localStorage.setItem('apellido',data.apellido)
         localStorage.setItem('correo',data.correo)
+      } else {
+        this.toast.error('No se pudo iniciar sesión')
       }
     },
     error: (err) => {
