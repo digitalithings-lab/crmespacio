@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { OpcionCliente } from 'src/app/utils/tipos';
 
-const normalizar = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+const normalizar = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 
 // Buscador de clientes: un campo que filtra mientras escribes y, debajo, la lista de clientes para elegir.
 @Component({
