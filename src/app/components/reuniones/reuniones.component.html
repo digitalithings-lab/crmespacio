@@ -12,12 +12,8 @@
     </div>
 
     <ng-container *ngIf="!codigo">
-      <label for="r-cliente" class="mt-6 mb-2 block text-sm font-semibold">Cliente</label>
-      <select id="r-cliente" [(ngModel)]="idexpediente" name="idexpediente"
-        class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-700 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
-        <option [ngValue]="null" disabled>Selecciona el cliente de la reunión</option>
-        <option *ngFor="let o of opciones" [ngValue]="o.valor">{{ o.etiqueta }}</option>
-      </select>
+      <p class="mt-6 mb-2 text-sm font-semibold">Cliente</p>
+      <app-buscador-cliente [opciones]="opciones" [(valor)]="idexpediente"></app-buscador-cliente>
 
       <label for="r-nombre" class="mt-5 mb-2 block text-sm font-semibold">Nombre de la reunión <span class="font-normal text-zinc-400">(opcional)</span></label>
       <input id="r-nombre" [(ngModel)]="nombre" name="nombre" type="text" placeholder="Ej. Sesión de seguimiento" (keyup.enter)="crear()"

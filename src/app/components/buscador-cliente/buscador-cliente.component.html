@@ -1,0 +1,25 @@
+<div class="relative">
+  <i class="ph ph-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
+  <input type="search" [(ngModel)]="busqueda" name="buscarCliente" autocomplete="off" placeholder="Buscar cliente por nombre…" aria-label="Buscar cliente"
+    class="w-full rounded-xl border border-zinc-300 bg-white py-3 pl-10 pr-4 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+</div>
+
+<div *ngIf="elegida as e" class="mt-3 flex items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm">
+  <span class="flex min-w-0 items-center gap-2 font-semibold text-brand-800"><i class="ph ph-check-circle text-lg"></i><span class="truncate">{{ e.etiqueta }}</span></span>
+  <button type="button" (click)="quitar()" class="shrink-0 text-xs font-semibold text-brand-700 hover:text-brand-900">Cambiar</button>
+</div>
+
+<p class="mt-3 text-xs text-zinc-500">{{ filtradas.length }} de {{ opciones.length }} cliente{{ opciones.length === 1 ? '' : 's' }}</p>
+<ul class="mt-2 max-h-56 divide-y divide-zinc-100 overflow-y-auto rounded-xl border border-zinc-200 bg-white" role="listbox" aria-label="Clientes">
+  <li *ngFor="let o of filtradas" role="option" [attr.aria-selected]="o.valor === valor">
+    <button type="button" (click)="elegir(o)"
+      class="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-sm transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-600"
+      [ngClass]="o.valor === valor ? 'bg-brand-50 font-semibold text-brand-800' : 'text-zinc-700'">
+      <span class="truncate">{{ o.etiqueta }}</span>
+      <i *ngIf="o.valor === valor" class="ph ph-check text-base text-brand-700"></i>
+    </button>
+  </li>
+  <li *ngIf="filtradas.length === 0" class="px-4 py-6 text-center text-sm text-zinc-500">
+    {{ opciones.length === 0 ? 'Aún no hay clientes registrados.' : 'Ningún cliente coincide con "' + busqueda + '".' }}
+  </li>
+</ul>

@@ -261,7 +261,7 @@
           <ng-container *ngIf="expediente(c); else sinCliente">
             <div class="mt-3 flex items-end gap-2">
               <div class="flex-1">
-                <label for="a-monto" class="mb-1.5 block text-xs font-semibold text-zinc-500">Monto ({{ c.currency }})</label>
+                <label for="a-monto" class="mb-1.5 block text-xs font-semibold text-zinc-500">Monto (USD · {{ c.modality === 'IN_PERSON' ? 'presencial' : 'virtual' }})</label>
                 <input id="a-monto" name="a-monto" [(ngModel)]="montoCobro" type="number" min="0" step="0.01" class="w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
               </div>
               <button type="button" (click)="crearCobro(c)" [disabled]="ocupado" class="inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800 active:scale-95 disabled:opacity-60"><i class="ph" [ngClass]="ocupado ? 'ph-spinner animate-spin' : 'ph-plus'"></i> Crear cobro</button>

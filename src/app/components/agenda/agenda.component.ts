@@ -143,7 +143,7 @@ export class AgendaComponent implements OnInit {
     this.motivoCancelacion = ''
     this.pagando = false
     this.formPago = { metodo: '', referencia: '' }
-    this.montoCobro = String(c.priceCents / 100)
+    this.montoCobro = String(this.precio(c))
   }
 
   @HostListener('document:keydown.escape')
@@ -422,6 +422,9 @@ export class AgendaComponent implements OnInit {
     catch { return `${Number(monto).toFixed(2)} ${moneda}` }
   }
 
+  // Tarifa por modalidad: virtual 40 USD, presencial 50 USD
+  precio(c: CitaAgenda): number { return c.modality === 'IN_PERSON' ? 50 : 40 }
+
   // ---- Billetera de la cita ----
   crearCobro(c: CitaAgenda) {
     const exp = this.expediente(c)
@@ -431,7 +434,7 @@ export class AgendaComponent implements OnInit {
     if (this.ocupado) return
     this.ocupado = true
     const fecha = new Date(c.startsAt).toLocaleDateString('es', { day: '2-digit', month: 'long', year: 'numeric' })
-    this.service.crearCobro({ idexpediente: exp, concepto: `Sesión de terapia · ${fecha}`, monto, moneda: c.currency, cita_ref: c.id }).subscribe({
+    this.service.crearCobro({ idexpediente: exp, concepto: `Sesión de terapia (${c.modality === 'IN_PERSON' ? 'presencial' : 'virtual'}) · ${fecha}`, monto, moneda: 'USD', cita_ref: c.id }).subscribe({
       next: () => { this.ocupado = false; this.toast.success('Cobro creado'); this.cargar() },
       error: (err) => { this.ocupado = false; this.toast.error(err.error?.message?.trim() || 'No se pudo crear el cobro') }
     })
