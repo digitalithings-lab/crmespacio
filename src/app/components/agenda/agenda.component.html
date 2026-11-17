@@ -293,10 +293,7 @@
         </div>
 
         <div *ngIf="formNueva.modo === 'existente'" class="mt-3">
-          <select name="n-cliente" [ngModel]="formNueva.idexpediente" (ngModelChange)="elegirCliente($event)" aria-label="Cliente" class="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
-            <option [ngValue]="null" disabled>Selecciona un cliente</option>
-            <option *ngFor="let o of opcionesClientes" [ngValue]="o.valor">{{ o.etiqueta }}</option>
-          </select>
+          <app-buscador-cliente [opciones]="opcionesClientes" [valor]="formNueva.idexpediente" (valorChange)="elegirCliente($event)"></app-buscador-cliente>
         </div>
 
         <div class="mt-3">
