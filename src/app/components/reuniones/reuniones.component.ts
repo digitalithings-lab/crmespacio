@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Cliente, ServiceclientesService } from 'src/app/services/serviceclientes.service';
 import { ServicesalaService } from 'src/app/services/servicesala.service';
-import { opcionesCliente } from 'src/app/utils/tipos';
+import { opcionesCliente, principalDe } from 'src/app/utils/tipos';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -21,6 +21,7 @@ export class ReunionesComponent implements OnInit {
   public codigoUnirse = ''
 
   public salas: any[] = []
+  public clienteFiltro: string | null = null
   public cargandoSalas = true
 
   constructor(
@@ -36,6 +37,10 @@ export class ReunionesComponent implements OnInit {
   }
 
   get opciones() { return opcionesCliente(this.clientes) }
+
+  get salasFiltradas(): any[] {
+    return this.clienteFiltro ? this.salas.filter(s => principalDe(s.idexpediente, this.clientes) === this.clienteFiltro) : this.salas
+  }
 
   cargarSalas() {
     this.service.listarSalas().subscribe({

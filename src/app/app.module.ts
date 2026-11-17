@@ -27,6 +27,7 @@ import { FormularioPublicoComponent } from './components/formulario-publico/form
 import { FormulariosComponent } from './components/formularios/formularios.component';
 import { ConstructorFormularioComponent } from './components/constructor-formulario/constructor-formulario.component';
 import { BuscadorClienteComponent } from './components/buscador-cliente/buscador-cliente.component';
+import { FiltroClienteComponent } from './components/filtro-cliente/filtro-cliente.component';
 import { SalaComponent } from './components/sala/sala.component';
 
 registerLocaleData(localeEs)
@@ -54,6 +55,7 @@ registerLocaleData(localeEs)
     FormulariosComponent,
     ConstructorFormularioComponent,
     BuscadorClienteComponent,
+    FiltroClienteComponent,
   ],
   imports: [
     BrowserModule,

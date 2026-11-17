@@ -59,15 +59,16 @@
 <!-- Historial -->
 <section class="mt-8 rounded-2xl border border-zinc-200 bg-white p-6">
   <h2 class="font-bold">Reuniones recientes</h2>
+  <div class="mt-3"><app-filtro-cliente [opciones]="opciones" [(valor)]="clienteFiltro"></app-filtro-cliente></div>
 
   <ul *ngIf="cargandoSalas" class="mt-3 divide-y divide-zinc-100" aria-hidden="true">
     <li *ngFor="let n of [1,2,3]" class="flex animate-pulse items-center gap-3 py-3"><div class="h-9 w-9 rounded-lg bg-zinc-200"></div><div class="flex-1 space-y-2"><div class="h-3.5 w-44 rounded bg-zinc-200"></div><div class="h-3 w-32 rounded bg-zinc-100"></div></div></li>
   </ul>
 
-  <p *ngIf="!cargandoSalas && salas.length === 0" class="animate-fade-up mt-4 text-sm text-zinc-500">Todavía no has creado reuniones.</p>
+  <p *ngIf="!cargandoSalas && salasFiltradas.length === 0" class="animate-fade-up mt-4 text-sm text-zinc-500">{{ salas.length === 0 ? 'Todavía no has creado reuniones.' : 'Este cliente no tiene reuniones.' }}</p>
 
-  <ul *ngIf="!cargandoSalas && salas.length > 0" class="mt-3 divide-y divide-zinc-100">
-    <li *ngFor="let s of salas; let i = index" class="animate-fade-up flex flex-wrap items-center gap-3 py-3" [style.animation-delay.ms]="(i < 8 ? i : 8) * 40">
+  <ul *ngIf="!cargandoSalas && salasFiltradas.length > 0" class="mt-3 divide-y divide-zinc-100">
+    <li *ngFor="let s of salasFiltradas; let i = index" class="animate-fade-up flex flex-wrap items-center gap-3 py-3" [style.animation-delay.ms]="(i < 8 ? i : 8) * 40">
       <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500"><i class="ph ph-video-camera text-lg"></i></span>
       <div class="min-w-0 flex-1">
         <p class="truncate text-sm font-semibold">{{ s.nombre || 'Reunión sin nombre' }}</p>

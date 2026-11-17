@@ -1,0 +1,15 @@
+<div class="max-w-md">
+  <div class="flex flex-wrap items-center gap-2">
+    <button type="button" (click)="abierto = !abierto" [attr.aria-expanded]="abierto"
+      class="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
+      <i class="ph ph-funnel text-base"></i> Filtrar por cliente
+    </button>
+    <span *ngIf="elegido as e" class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1.5 text-sm font-semibold text-brand-800">
+      {{ e.etiqueta }}
+      <button type="button" (click)="elegir(null)" aria-label="Quitar filtro" class="text-brand-700 hover:text-brand-900"><i class="ph ph-x"></i></button>
+    </span>
+  </div>
+  <div *ngIf="abierto" class="animate-fade-up mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
+    <app-buscador-cliente [opciones]="opciones" [valor]="valor" (valorChange)="elegir($event)"></app-buscador-cliente>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Archivo, Cliente, ServiceclientesService } from 'src/app/services/serviceclientes.service';
-import { opcionesCliente } from 'src/app/utils/tipos';
+import { opcionesCliente, principalDe } from 'src/app/utils/tipos';
 import { categoriaArchivo, esImagenVisible, formatoTamano, iconoArchivo } from 'src/app/utils/archivos';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -12,6 +12,7 @@ import { ToastService } from 'src/app/services/toast.service';
 export class BibliotecaComponent implements OnInit {
   public archivos: Archivo[] = []
   public clientes: Cliente[] = []
+  public clienteFiltro: string | null = null
   public cargando = true
   public subiendo = false
   public arrastrando = false
@@ -39,7 +40,10 @@ export class BibliotecaComponent implements OnInit {
   get opciones() { return opcionesCliente(this.clientes) }
 
   get filtrados(): Archivo[] {
-    return this.filtro === 'Todos' ? this.archivos : this.archivos.filter(a => categoriaArchivo(a.documento) === this.filtro)
+    const deCliente = this.clienteFiltro
+      ? this.archivos.filter(a => principalDe(a.idexpediente, this.clientes) === this.clienteFiltro)
+      : this.archivos
+    return this.filtro === 'Todos' ? deCliente : deCliente.filter(a => categoriaArchivo(a.documento) === this.filtro)
   }
 
   alElegir(event: Event) {
