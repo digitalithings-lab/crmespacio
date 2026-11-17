@@ -53,7 +53,8 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   public cargandoBilletera = true
   public correoConfigurado = true
   public correoFaltan: string[] = []
-  public formCobro = { concepto: '', monto: '', moneda: 'USD', codigo_sala: '' }
+  public formCobro = { concepto: '', monto: '', moneda: 'USD', codigo_sala: '', cita_ref: '' }
+  public citasSinCobro: { id: string; startsAt: string; modality: string; status: string }[] = []
   public creandoCobro = false
   public cobroPagando: Cobro | null = null   // cobro cuyo formulario de pago está abierto
   public formPago = { metodo: '', referencia: '' }
@@ -119,6 +120,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     this.service.obtenerBilletera(this.id).subscribe({
       next: (resp) => {
         this.billetera = resp.data
+        this.cargarCitasSinCobro()
         this.correoConfigurado = resp.correoConfigurado !== false
         this.correoFaltan = resp.correoFaltan ?? []
         this.cargandoBilletera = false
@@ -130,9 +132,33 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     })
   }
 
+  // Citas de Florece de este cliente que aún no tienen cobro: al cobrarlas, el cobro queda en su día de la agenda
+  private cargarCitasSinCobro() {
+    this.service.citasDeCliente(this.id).subscribe({
+      next: (r) => (this.citasSinCobro = r.data ?? []),
+      error: () => (this.citasSinCobro = [])
+    })
+  }
+
+  textoCita(c: { startsAt: string; modality: string }) {
+    const fecha = new Date(c.startsAt).toLocaleDateString('es', { day: '2-digit', month: 'long', year: 'numeric' })
+    return `Sesión de terapia (${c.modality === 'IN_PERSON' ? 'presencial' : 'virtual'}) · ${fecha}`
+  }
+
+  // Elegir una cita precarga concepto, monto (virtual 40 USD, presencial 50 USD) y moneda
+  alElegirCita() {
+    const c = this.citasSinCobro.find(x => x.id === this.formCobro.cita_ref)
+    if (!c) return
+    this.formCobro.codigo_sala = ''
+    this.formCobro.concepto = this.textoCita(c)
+    this.formCobro.monto = c.modality === 'IN_PERSON' ? '50' : '40'
+    this.formCobro.moneda = 'USD'
+  }
+
   // Elegir una reunión sin cobro precarga el concepto
   alElegirReunion() {
     const r = this.billetera?.reunionesSinCobro.find(x => x.codigo === this.formCobro.codigo_sala)
+    if (r) this.formCobro.cita_ref = ''
     if (r && !this.formCobro.concepto.trim()) this.formCobro.concepto = r.nombre || 'Reunión'
   }
 
@@ -145,11 +171,13 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     this.creandoCobro = true
     this.service.crearCobro({
       idexpediente: this.id, concepto: f.concepto.trim(), monto,
-      moneda: f.moneda.trim().toUpperCase(), codigo_sala: f.codigo_sala || undefined
+      moneda: f.moneda.trim().toUpperCase(), codigo_sala: f.codigo_sala || undefined,
+      cita_ref: f.cita_ref || undefined,
+      fecha_servicio: this.citasSinCobro.find(x => x.id === f.cita_ref)?.startsAt
     }).subscribe({
       next: () => {
         this.creandoCobro = false
-        this.formCobro = { ...this.formCobro, concepto: '', monto: '', codigo_sala: '' }
+        this.formCobro = { ...this.formCobro, concepto: '', monto: '', codigo_sala: '', cita_ref: '' }
         this.toast.success('Cobro creado')
         this.cargarBilletera()
       },

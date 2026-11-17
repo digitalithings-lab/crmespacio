@@ -251,6 +251,9 @@ export class ServiceclientesService {
   obtenerBilletera(idexpediente: string): Observable<any> {
     return this.http.get<any>(`${api}/billetera/${idexpediente}`)
   }
+  citasDeCliente(idexpediente: string): Observable<any> {
+    return this.http.get<any>(`${api}/citas-cliente/${idexpediente}`)
+  }
   crearCobro(data: any): Observable<any> {
     return this.http.post<any>(`${api}/cobros`, data).pipe(this.cambio())
   }
