@@ -69,6 +69,17 @@ export class AgendaComponent implements OnInit {
     return { desde, hasta }
   }
 
+  // Los cobros sin pagar de una cita se alinean con la tarifa de su modalidad (virtual 40, presencial 50)
+  private ajustarTarifas() {
+    for (const c of this.citas) {
+      const co = c.cobro
+      if (!co || co.estado !== 'pendiente' || String(co.moneda).toUpperCase() !== 'USD') continue
+      const tarifa = this.precio(c)
+      if (Number(co.monto) === tarifa) continue
+      this.service.actualizarMonto(co.id, tarifa).subscribe({ next: () => { co.monto = tarifa } })
+    }
+  }
+
   cargar() {
     this.cargando = true
     this.error = ''
@@ -80,6 +91,7 @@ export class AgendaComponent implements OnInit {
         this.cargando = false
         this.armarDias(desde)
         if (this.abierta) this.abierta = this.citas.find(c => c.id === this.abierta!.id) ?? null
+        this.ajustarTarifas()
       },
       error: (err) => {
         this.cargando = false

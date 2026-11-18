@@ -271,6 +271,9 @@ export class ServiceclientesService {
     form.append('archivo', file)
     return this.http.post<any>(`${api}/cobros/${id}/comprobante`, form)
   }
+  actualizarMonto(id: number, monto: number): Observable<any> {
+    return this.http.post<any>(`${api}/cobros/${id}/monto`, { monto })
+  }
   eliminarCobro(id: number): Observable<any> {
     return this.http.delete<any>(`${api}/cobros/${id}`)
   }
