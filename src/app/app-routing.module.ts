@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { ChatIaPaginaComponent } from './components/chat-ia-pagina/chat-ia-pagina.component';
 import { RouterModule, Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { LoginComponent } from './components/login/login.component';
@@ -41,6 +42,7 @@ const routes: Routes = [
       { path: 'biblioteca-personal', component: BibliotecaPersonalComponent },
       { path: 'formularios', component: FormulariosComponent },
       { path: 'reuniones', component: ReunionesComponent },
+      { path: 'chat-ia', component: ChatIaPaginaComponent },
       {path:'crearcuenta',component:CrearcuentaComponent}
     ],
   },

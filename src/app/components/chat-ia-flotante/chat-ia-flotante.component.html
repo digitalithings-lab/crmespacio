@@ -1,0 +1,17 @@
+<button type="button" (click)="abierto = true" aria-label="Abrir asistente de IA" [ngClass]="posicion"
+  class="group fixed z-40 flex h-14 items-center gap-0 rounded-full bg-zinc-900 px-[1.1rem] text-white shadow-lg ring-1 ring-white/20 transition-all duration-300 hover:gap-2 hover:bg-zinc-800 hover:pr-5 active:scale-95 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/40"
+  [class.pointer-events-none]="abierto" [class.scale-0]="abierto" [class.opacity-0]="abierto">
+  <i class="ph ph-sparkle text-2xl"></i>
+  <span class="max-w-0 overflow-hidden whitespace-nowrap text-sm font-semibold opacity-0 transition-all duration-300 group-hover:max-w-[7rem] group-hover:opacity-100 group-focus-visible:max-w-[7rem] group-focus-visible:opacity-100">Asistente IA</span>
+</button>
+
+<!-- El chat queda montado aunque se cierre el panel: así no se pierde la conversación durante la llamada -->
+<div class="fixed inset-y-0 right-0 z-50 w-full text-zinc-900 sm:w-[26rem]" [class.hidden]="!abierto" role="dialog" aria-label="Asistente de IA">
+  <div class="animate-slide-up flex h-full flex-col border-l border-zinc-200 bg-white shadow-2xl">
+    <div class="flex items-center justify-between gap-4 border-b border-zinc-100 px-5 py-4">
+      <h2 class="flex items-center gap-2 text-lg font-extrabold tracking-tight"><i class="ph ph-sparkle text-brand-700"></i> Asistente IA</h2>
+      <button type="button" (click)="abierto = false" aria-label="Cerrar" class="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700"><i class="ph ph-x text-lg"></i></button>
+    </div>
+    <div class="min-h-0 flex-1"><app-chat-ia [idexpediente]="idexpediente" contexto="sala" [sugerencias]="sugerencias"></app-chat-ia></div>
+  </div>
+</div>

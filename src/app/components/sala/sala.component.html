@@ -132,4 +132,6 @@
 
   <!-- Notas durante la llamada (solo para quien inició sesión) -->
   <app-nota-flotante *ngIf="esAdmin && fase === 'llamada'" [lateral]="true" posicion="bottom-24 right-4 sm:bottom-6 sm:right-6"></app-nota-flotante>
+  <!-- Asistente de IA durante la llamada (solo para quien inició sesión) -->
+  <app-chat-ia-flotante *ngIf="esAdmin && fase === 'llamada'" [idexpediente]="idexpediente" posicion="bottom-40 right-4 sm:bottom-24 sm:right-6"></app-chat-ia-flotante>
 </div>

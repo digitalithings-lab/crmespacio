@@ -6,6 +6,9 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 import { AppRoutingModule } from './app-routing.module';
+import { ChatIaComponent } from './components/chat-ia/chat-ia.component';
+import { ChatIaPaginaComponent } from './components/chat-ia-pagina/chat-ia-pagina.component';
+import { ChatIaFlotanteComponent } from './components/chat-ia-flotante/chat-ia-flotante.component';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
@@ -34,6 +37,7 @@ registerLocaleData(localeEs)
 
 @NgModule({
   declarations: [
+    ChatIaComponent, ChatIaPaginaComponent, ChatIaFlotanteComponent,
     AppComponent,
     LoginComponent,
     DashboardComponent,

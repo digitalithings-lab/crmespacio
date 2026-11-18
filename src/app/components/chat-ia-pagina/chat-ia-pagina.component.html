@@ -1,0 +1,19 @@
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="text-3xl font-extrabold tracking-tight">Chat con IA</h1>
+    <p class="mt-1 text-sm text-zinc-500">Pídele resúmenes de expedientes, revisar la agenda, cobros o guardar notas.</p>
+  </div>
+</div>
+
+<div class="mt-6 grid gap-4 lg:grid-cols-3">
+  <div class="rounded-2xl border border-zinc-200 bg-white p-5 lg:col-span-1 lg:self-start">
+    <p class="mb-2 text-sm font-semibold">Paciente en atención <span class="font-normal text-zinc-400">(opcional)</span></p>
+    <app-buscador-cliente [opciones]="opciones" [(valor)]="idexpediente"></app-buscador-cliente>
+    <p class="mt-2 text-xs text-zinc-500">Si eliges uno, puedes decir "este paciente" y la IA sabrá de quién hablas.</p>
+    <p class="mt-4 flex items-start gap-2 rounded-xl bg-zinc-50 p-3 text-xs text-zinc-500"><i class="ph ph-shield-check mt-0.5 text-base text-brand-700"></i><span>La IA solo consulta lo necesario y te pide confirmación antes de guardar notas o cobros.</span></p>
+  </div>
+
+  <div class="h-[70dvh] min-h-[28rem] overflow-hidden rounded-2xl border border-zinc-200 bg-white lg:col-span-2">
+    <app-chat-ia [idexpediente]="idexpediente" [sugerencias]="sugerencias"></app-chat-ia>
+  </div>
+</div>

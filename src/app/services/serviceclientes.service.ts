@@ -179,6 +179,11 @@ export class ServiceclientesService {
     return this.http.get<any>(`${api}/cliente/${idexpediente}`)
   }
 
+  // ---- Asistente con IA ----
+  chatIA(mensajes: { role: string; content: string }[], idexpediente: string | null, contexto: string): Observable<any> {
+    return this.http.post<any>(`${api}/ia/chat`, { mensajes, idexpediente, contexto })
+  }
+
   // ---- Agenda (citas de Florece) ----
   obtenerAgenda(desde: Date, hasta: Date): Observable<any> {
     return this.http.get<any>(`${api}/agenda`, { params: { desde: desde.toISOString(), hasta: hasta.toISOString() } })
