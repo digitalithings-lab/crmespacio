@@ -73,10 +73,10 @@ export class AgendaComponent implements OnInit {
   private ajustarTarifas() {
     for (const c of this.citas) {
       const co = c.cobro
-      if (!co || co.estado !== 'pendiente' || String(co.moneda).toUpperCase() !== 'USD') continue
+      if (!co || co.estado !== 'pendiente') continue
       const tarifa = this.precio(c)
-      if (Number(co.monto) === tarifa) continue
-      this.service.actualizarMonto(co.id, tarifa).subscribe({ next: () => { co.monto = tarifa } })
+      if (Number(co.monto) === tarifa && String(co.moneda).toUpperCase() === 'USD') continue
+      this.service.actualizarMonto(co.id, tarifa, 'USD').subscribe({ next: () => { co.monto = tarifa; co.moneda = 'USD' } })
     }
   }
 
