@@ -32,6 +32,7 @@ import { ConstructorFormularioComponent } from './components/constructor-formula
 import { BuscadorClienteComponent } from './components/buscador-cliente/buscador-cliente.component';
 import { FiltroClienteComponent } from './components/filtro-cliente/filtro-cliente.component';
 import { SalaComponent } from './components/sala/sala.component';
+import { TarjetaNotaComponent } from './components/tarjeta-nota/tarjeta-nota.component';
 
 registerLocaleData(localeEs)
 
@@ -50,6 +51,7 @@ registerLocaleData(localeEs)
     ToastComponent,
     ExpedienteComponent,
     NotaFlotanteComponent,
+    TarjetaNotaComponent,
     ReunionesComponent,
     SalaComponent,
     AgendaComponent,

@@ -67,9 +67,8 @@
         <div *ngIf="cargandoNotas" class="space-y-3" aria-hidden="true"><div *ngFor="let n of [1,2]" class="h-20 animate-pulse rounded-xl bg-zinc-100"></div></div>
         <p *ngIf="idexpediente && !cargandoNotas && notas.length === 0" class="text-sm text-zinc-500">Aún no hay notas de este cliente.</p>
         <ul class="space-y-3">
-          <li *ngFor="let n of notas" class="rounded-xl border border-zinc-200 p-4">
-            <span class="text-xs font-medium text-zinc-400">{{ n.fecha_creacion | date: 'dd/MM/yyyy · HH:mm' }}</span>
-            <p class="mt-2 whitespace-pre-line text-sm leading-relaxed text-zinc-700">{{ n.texto }}</p>
+          <li *ngFor="let n of notas">
+            <app-tarjeta-nota [nota]="n" [compacta]="true"></app-tarjeta-nota>
           </li>
         </ul>
       </div>

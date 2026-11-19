@@ -292,6 +292,16 @@ export class ServiceclientesService {
   listarNotas(idexpediente?: string): Observable<any> {
     return this.http.get<any>(idexpediente ? `${api}/notas/${idexpediente}` : `${api}/notas`)
   }
+  editarNota(idnota: number, data: { texto: string; fecha?: string }): Observable<any> {
+    return this.http.patch<any>(`${api}/notas/${idnota}`, data).pipe(
+      tap(() => { this.cache.clear(); this._notasActualizadas.next() })
+    )
+  }
+  eliminarNota(idnota: number): Observable<any> {
+    return this.http.delete<any>(`${api}/notas/${idnota}`).pipe(
+      tap(() => { this.cache.clear(); this._notasActualizadas.next() })
+    )
+  }
 
   // ---- Archivos (bucket) ----
   subirArchivo(idexpediente: string, archivo: File): Observable<any> {
