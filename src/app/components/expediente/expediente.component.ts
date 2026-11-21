@@ -10,6 +10,13 @@ import { BorradorFormulario, modeloDatos } from '../constructor-formulario/const
 
 type Pestana = 'expediente' | 'notas' | 'biblioteca' | 'reuniones' | 'billetera' | 'formularios'
 
+const aInputLocal = (valor?: string | Date): string => {
+  const d = valor ? new Date(valor) : new Date()
+  if (Number.isNaN(d.getTime())) return ''
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 16)
+}
+
 @Component({
   selector: 'app-expediente',
   templateUrl: './expediente.component.html',
@@ -53,7 +60,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
   public cargandoBilletera = true
   public correoConfigurado = true
   public correoFaltan: string[] = []
-  public formCobro = { concepto: '', monto: '', moneda: 'USD', codigo_sala: '', cita_ref: '' }
+  public formCobro = { concepto: '', monto: '', moneda: 'USD', codigo_sala: '', cita_ref: '', fecha: aInputLocal() }
   public citasSinCobro: { id: string; startsAt: string; modality: string; status: string }[] = []
   public creandoCobro = false
   public cobroPagando: Cobro | null = null   // cobro cuyo formulario de pago está abierto
@@ -145,7 +152,7 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     return `Sesión de terapia (${c.modality === 'IN_PERSON' ? 'presencial' : 'virtual'}) · ${fecha}`
   }
 
-  // Elegir una cita precarga concepto, monto (virtual 40 USD, presencial 50 USD) y moneda
+  // Elegir una cita precarga concepto, monto (virtual 40 USD, presencial 50 USD), moneda y fecha
   alElegirCita() {
     const c = this.citasSinCobro.find(x => x.id === this.formCobro.cita_ref)
     if (!c) return
@@ -153,12 +160,16 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     this.formCobro.concepto = this.textoCita(c)
     this.formCobro.monto = c.modality === 'IN_PERSON' ? '50' : '40'
     this.formCobro.moneda = 'USD'
+    this.formCobro.fecha = aInputLocal(c.startsAt)
   }
 
-  // Elegir una reunión sin cobro precarga el concepto
+  // Elegir una reunión sin cobro precarga el concepto y su fecha
   alElegirReunion() {
     const r = this.billetera?.reunionesSinCobro.find(x => x.codigo === this.formCobro.codigo_sala)
-    if (r) this.formCobro.cita_ref = ''
+    if (r) {
+      this.formCobro.cita_ref = ''
+      this.formCobro.fecha = aInputLocal(r.fecha_creacion)
+    }
     if (r && !this.formCobro.concepto.trim()) this.formCobro.concepto = r.nombre || 'Reunión'
   }
 
@@ -167,17 +178,22 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     const monto = Number(f.monto)
     if (!monto || monto <= 0) return this.toast.error('Escribe un monto mayor que 0')
     if (!f.concepto.trim() && !f.codigo_sala) return this.toast.error('Escribe el concepto del cobro')
+    const fechaManual = f.fecha ? new Date(f.fecha) : null
+    if (f.fecha && (!fechaManual || Number.isNaN(fechaManual.getTime()))) {
+      return this.toast.error('La fecha del cobro no es válida')
+    }
     if (this.creandoCobro) return
     this.creandoCobro = true
+    const fechaServicio = fechaManual ? fechaManual.toISOString() : this.citasSinCobro.find(x => x.id === f.cita_ref)?.startsAt
     this.service.crearCobro({
       idexpediente: this.id, concepto: f.concepto.trim(), monto,
       moneda: f.moneda.trim().toUpperCase(), codigo_sala: f.codigo_sala || undefined,
       cita_ref: f.cita_ref || undefined,
-      fecha_servicio: this.citasSinCobro.find(x => x.id === f.cita_ref)?.startsAt
+      fecha_servicio: fechaServicio
     }).subscribe({
       next: () => {
         this.creandoCobro = false
-        this.formCobro = { ...this.formCobro, concepto: '', monto: '', codigo_sala: '', cita_ref: '' }
+        this.formCobro = { ...this.formCobro, concepto: '', monto: '', codigo_sala: '', cita_ref: '', fecha: aInputLocal() }
         this.toast.success('Cobro creado')
         this.cargarBilletera()
       },
