@@ -370,6 +370,9 @@
             <button *ngIf="c.estado === 'pagado'" type="button" (click)="reenviar(c)" [disabled]="ocupado[c.id]" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95 disabled:opacity-60">
               <i class="ph" [ngClass]="ocupado[c.id] ? 'ph-spinner animate-spin' : 'ph-paper-plane-tilt'"></i> {{ c.factura_enviada ? 'Reenviar factura' : 'Enviar factura' }}
             </button>
+            <button type="button" (click)="descargarPdf(c)" [disabled]="ocupado[c.id]" class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 active:scale-95 disabled:opacity-60">
+              <i class="ph" [ngClass]="ocupado[c.id] ? 'ph-spinner animate-spin' : 'ph-file-pdf'"></i> Descargar PDF
+            </button>
           </div>
 
           <!-- Formulario de pago -->

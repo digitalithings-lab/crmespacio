@@ -244,6 +244,26 @@ export class ExpedienteComponent implements OnInit, OnDestroy {
     })
   }
 
+  descargarPdf(c: Cobro) {
+    if (this.ocupado[c.id]) return
+    this.ocupado[c.id] = true
+    this.service.descargarFacturaPdf(c.id).subscribe({
+      next: (blob) => {
+        this.ocupado[c.id] = false
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${c.factura_numero || `Comprobante-${c.id}`}.pdf`
+        a.click()
+        URL.revokeObjectURL(url)
+      },
+      error: () => {
+        this.ocupado[c.id] = false
+        this.toast.error('No se pudo generar el PDF')
+      }
+    })
+  }
+
   alElegirComprobante(c: Cobro, event: Event) {
     const input = event.target as HTMLInputElement
     const file = input.files?.[0]

@@ -268,6 +268,9 @@ export class ServiceclientesService {
   reenviarFactura(id: number): Observable<any> {
     return this.http.post<any>(`${api}/cobros/${id}/factura`, {})
   }
+  descargarFacturaPdf(id: number): Observable<Blob> {
+    return this.http.get(`${api}/cobros/${id}/factura/pdf`, { responseType: 'blob' })
+  }
   recordarCobro(id: number): Observable<any> {
     return this.http.post<any>(`${api}/cobros/${id}/recordatorio`, {})
   }
