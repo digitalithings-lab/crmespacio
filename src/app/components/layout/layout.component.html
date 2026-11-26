@@ -1,4 +1,4 @@
-<div class="relative flex min-h-[100dvh] bg-zinc-50 font-sans text-zinc-800 antialiased">
+<div class="relative flex min-h-[100dvh] bg-[#faf8f9] font-sans text-zinc-800 antialiased">
 
   <!-- Control del menú móvil (sin JS) -->
   <input id="menu-toggle" type="checkbox" class="peer sr-only" />
@@ -6,31 +6,37 @@
     class="fixed inset-0 z-30 hidden bg-zinc-900/40 backdrop-blur-sm peer-checked:block lg:!hidden"></label>
 
   <!-- Sidebar -->
-  <aside class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col border-r border-zinc-200 bg-white p-4 transition-transform duration-300 ease-in-out peer-checked:translate-x-0 lg:static lg:w-64 lg:translate-x-0">
-    <div class="flex items-center gap-3 px-2 py-3">
-      <img src="assets/img/Logo Espacio Vital.png" alt="Logo" class="h-10 w-10 object-contain" />
-    </div>
+  <aside class="fixed inset-y-0 left-0 z-40 flex w-72 -translate-x-full flex-col border-r border-zinc-200/80 bg-white p-4 shadow-sm transition-transform duration-300 ease-in-out peer-checked:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh] lg:w-64 lg:shrink-0 lg:translate-x-0 lg:shadow-none">
+    <a routerLink="/dashboard" class="flex items-center gap-3 rounded-xl px-2 py-2.5 transition hover:bg-brand-50/50">
+      <img src="assets/img/Logo Espacio Vital.png" alt="Logo Espacio Vital" class="h-10 w-10 shrink-0 object-contain" />
+      <div class="min-w-0">
+        <p class="truncate text-sm font-extrabold tracking-tight text-brand-900">Espacio Vital</p>
+        <p class="truncate text-[11px] font-semibold text-brand-600">CRM Clínico</p>
+      </div>
+    </a>
 
-    <p class="mt-6 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">Menú</p>
-    <nav class="mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto" aria-label="Principal" (click)="$any($event.target).closest('a') && cerrarMenu()">
-        <a routerLink="/dashboard" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-house text-xl"></i>Dashboard</a>
-        <a routerLink="/agenda" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-calendar-blank text-xl"></i>Agenda</a>
-        <a routerLink="/clientes" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-users text-xl"></i>Clientes</a>
-        <a routerLink="/notas" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-note-pencil text-xl"></i>Notas</a>
-        <a routerLink="/biblioteca" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-books text-xl"></i>Biblioteca</a>
-        <a routerLink="/biblioteca-personal" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-folder-user text-xl"></i>Biblioteca personal</a>
-        <a routerLink="/formularios" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-list-checks text-xl"></i>Formularios</a>
-        <a routerLink="/reuniones" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-video-camera text-xl"></i>Reuniones</a>
-        <a routerLink="/chat-ia" routerLinkActive="!bg-brand-50 !text-brand-700" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-sparkle text-xl"></i>Chat con IA</a>
+    <p class="mt-5 px-3 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Principal</p>
+    <nav class="mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto pr-0.5" aria-label="Principal" (click)="$any($event.target).closest('a') && cerrarMenu()">
+        <a routerLink="/dashboard" routerLinkActive="!bg-brand-50 !text-brand-800 ring-1 ring-brand-200/80 shadow-sm" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-house text-xl"></i>Dashboard</a>
+        <a routerLink="/agenda" routerLinkActive="!bg-brand-50 !text-brand-800 ring-1 ring-brand-200/80 shadow-sm" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-calendar-blank text-xl"></i>Agenda</a>
+        <a routerLink="/clientes" routerLinkActive="!bg-brand-50 !text-brand-800 ring-1 ring-brand-200/80 shadow-sm" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-users text-xl"></i>Clientes</a>
+        <a routerLink="/notas" routerLinkActive="!bg-brand-50 !text-brand-800 ring-1 ring-brand-200/80 shadow-sm" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-note-pencil text-xl"></i>Notas</a>
+
+        <p class="px-3 pb-1 pt-4 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Herramientas</p>
+        <a routerLink="/biblioteca" routerLinkActive="!bg-brand-50 !text-brand-800 ring-1 ring-brand-200/80 shadow-sm" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-books text-xl"></i>Biblioteca</a>
+        <a routerLink="/biblioteca-personal" routerLinkActive="!bg-brand-50 !text-brand-800 ring-1 ring-brand-200/80 shadow-sm" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-folder-user text-xl"></i>Biblioteca personal</a>
+        <a routerLink="/formularios" routerLinkActive="!bg-brand-50 !text-brand-800 ring-1 ring-brand-200/80 shadow-sm" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-list-checks text-xl"></i>Formularios</a>
+        <a routerLink="/reuniones" routerLinkActive="!bg-brand-50 !text-brand-800 ring-1 ring-brand-200/80 shadow-sm" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-video-camera text-xl"></i>Reuniones</a>
+        <a routerLink="/chat-ia" routerLinkActive="!bg-brand-50 !text-brand-800 ring-1 ring-brand-200/80 shadow-sm" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-zinc-600 transition duration-200 hover:bg-zinc-100/80 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-sparkle text-xl"></i>Chat con IA</a>
     </nav>
 
-    <div class="flex items-center gap-3 rounded-xl border border-zinc-200 p-3">
-      <div class="flex h-9 w-9 items-center justify-center rounded-full bg-brand-700 text-sm font-bold text-white">U</div>
+    <div class="mt-3 flex shrink-0 items-center gap-3 rounded-2xl border border-zinc-200/80 bg-zinc-50/80 p-3">
+      <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-700 to-brand-500 text-sm font-bold text-white shadow-sm">{{ (nombre?.[0] || 'U') | uppercase }}</div>
       <div class="min-w-0 flex-1">
-        <p class="truncate text-sm font-semibold">{{ nombre }} {{ apellido }}</p>
+        <p class="truncate text-sm font-semibold text-zinc-900">{{ nombre }} {{ apellido }}</p>
         <p class="truncate text-xs text-zinc-500">{{correo}}</p>
       </div>
-      <a routerLink="/login" (click)="cerrarSesion()" aria-label="Cerrar sesión" class="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-sign-out text-lg"></i></a>
+      <a routerLink="/login" (click)="cerrarSesion()" aria-label="Cerrar sesión" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-brand-50 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"><i class="ph ph-sign-out text-lg"></i></a>
     </div>
   </aside>
 

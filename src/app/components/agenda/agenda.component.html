@@ -22,15 +22,15 @@
 
 <div class="mt-6 grid gap-6 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
   <!-- Calendario -->
-  <div class="rounded-2xl border border-zinc-200 bg-white p-3 sm:p-4" [class.opacity-60]="cargando">
+  <div class="rounded-2xl border border-zinc-200/80 bg-white p-3 shadow-sm sm:p-4" [class.opacity-60]="cargando">
     <div class="grid grid-cols-7 text-center text-xs font-semibold uppercase tracking-wider text-zinc-400">
       <span *ngFor="let s of semanas" class="py-2">{{ s }}</span>
     </div>
     <div class="grid grid-cols-7 gap-1">
       <button *ngFor="let d of dias" type="button" (click)="elegir(d)"
         class="relative flex h-[3.25rem] flex-col items-center justify-start rounded-xl p-1 text-sm sm:h-16 lg:h-[4.25rem] transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 sm:p-1.5"
-        [ngClass]="d.clave === seleccionado ? 'bg-brand-700 text-white shadow-sm' : d.delMes ? 'text-zinc-800 hover:bg-zinc-100' : 'text-zinc-300 hover:bg-zinc-50'"
-        [class.ring-2]="d.hoy && d.clave !== seleccionado" [class.ring-brand-300]="d.hoy && d.clave !== seleccionado"
+        [ngClass]="d.clave === seleccionado ? 'bg-gradient-to-br from-brand-700 to-brand-800 text-white shadow-sm' : d.delMes ? 'text-zinc-800 hover:bg-brand-50/50' : 'text-zinc-300 hover:bg-zinc-50'"
+        [class.ring-2]="d.hoy && d.clave !== seleccionado" [class.ring-brand-500]="d.hoy && d.clave !== seleccionado" [class.bg-brand-50]="d.hoy && d.clave !== seleccionado"
         [attr.aria-label]="(d.fecha | date: 'd MMMM') + ', ' + d.citas.length + ' citas'">
         <span class="font-semibold">{{ d.fecha | date: 'd' }}</span>
         <span *ngIf="d.citas.length" class="mt-auto inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-5"

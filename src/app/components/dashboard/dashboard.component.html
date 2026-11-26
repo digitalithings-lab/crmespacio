@@ -1,10 +1,13 @@
 <div class="flex flex-wrap items-end justify-between gap-4">
   <div class="min-w-0">
-    <p class="text-sm font-medium text-zinc-500">Bienvenido de nuevo{{ nombre ? ', ' + nombre : '' }} · Dashboard</p>
-    <h1 class="mt-1 text-4xl font-extrabold leading-tight first-letter:uppercase tracking-tight sm:text-5xl">{{ hoy | date: "EEEE d 'de' MMMM" }}</h1>
-    <p class="mt-1 text-lg font-semibold text-brand-700">{{ hoy | date: "y · HH:mm" }}</p>
+    <p class="text-sm font-semibold text-brand-700">Bienvenido de nuevo{{ nombre ? ', ' + nombre : '' }}</p>
+    <h1 class="mt-1 text-3xl font-extrabold leading-tight first-letter:uppercase tracking-tight text-zinc-900 sm:text-4xl">{{ hoy | date: "EEEE d 'de' MMMM" }}</h1>
+    <div class="mt-2 inline-flex items-center gap-2 rounded-full border border-brand-200/70 bg-brand-50/80 px-3 py-1 text-xs font-semibold text-brand-800">
+      <i class="ph ph-clock text-sm text-brand-700"></i>
+      <span>{{ hoy | date: "y · HH:mm" }}</span>
+    </div>
   </div>
-  <a routerLink="/clientes" [queryParams]="{ nuevo: 1 }" class="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+  <a routerLink="/clientes" [queryParams]="{ nuevo: 1 }" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-700 to-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-900/15 transition duration-200 hover:from-brand-800 hover:to-brand-700 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
     <i class="ph ph-plus text-base"></i> Nuevo cliente
   </a>
 </div>
@@ -24,20 +27,29 @@
   </ng-container>
 
   <ng-container *ngIf="!cargando">
-    <a routerLink="/clientes" class="animate-fade-up group relative overflow-hidden rounded-2xl bg-brand-700 p-6 text-white transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand-900/20 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+    <a routerLink="/clientes" class="animate-fade-up group relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-700 via-brand-700 to-brand-900 p-6 text-white shadow-sm shadow-brand-900/20 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand-900/25 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
       <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 transition duration-500 group-hover:scale-125"></div>
-      <div class="relative flex items-center justify-between"><p class="text-sm font-medium text-white/80">Clientes</p><i class="ph ph-users text-xl text-white/70"></i></div>
+      <div class="relative flex items-center justify-between">
+        <p class="text-sm font-semibold text-white/85">Clientes</p>
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 text-white"><i class="ph ph-users text-xl"></i></span>
+      </div>
       <p class="relative mt-4 text-5xl font-extrabold tracking-tight">{{ totales.clientes }}</p>
-      <p class="relative mt-1 text-xs text-white/70">{{ totales.clientes === 1 ? 'cliente registrado' : 'clientes registrados' }}</p>
+      <p class="relative mt-1 text-xs text-white/75">{{ totales.clientes === 1 ? 'cliente registrado' : 'clientes registrados' }}</p>
     </a>
-    <a routerLink="/notas" class="animate-fade-up rounded-2xl border border-zinc-200 bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600" style="animation-delay: 60ms">
-      <div class="flex items-center justify-between"><p class="text-sm font-medium text-zinc-500">Notas</p><i class="ph ph-note-pencil text-xl text-zinc-400"></i></div>
-      <p class="mt-4 text-4xl font-extrabold tracking-tight">{{ totales.notas }}</p>
+    <a routerLink="/notas" class="animate-fade-up rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600" style="animation-delay: 60ms">
+      <div class="flex items-center justify-between">
+        <p class="text-sm font-semibold text-zinc-600">Notas</p>
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700"><i class="ph ph-note-pencil text-xl"></i></span>
+      </div>
+      <p class="mt-4 text-4xl font-extrabold tracking-tight text-zinc-900">{{ totales.notas }}</p>
       <p class="mt-1 text-xs text-zinc-500">{{ totales.notasSemana > 0 ? totales.notasSemana + ' en los últimos 7 días' : 'Ninguna en los últimos 7 días' }}</p>
     </a>
-    <a routerLink="/biblioteca" class="animate-fade-up rounded-2xl border border-zinc-200 bg-white p-6 transition duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600" style="animation-delay: 120ms">
-      <div class="flex items-center justify-between"><p class="text-sm font-medium text-zinc-500">Biblioteca</p><i class="ph ph-books text-xl text-zinc-400"></i></div>
-      <p class="mt-4 text-4xl font-extrabold tracking-tight">{{ totales.archivos }}</p>
+    <a routerLink="/biblioteca" class="animate-fade-up rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600" style="animation-delay: 120ms">
+      <div class="flex items-center justify-between">
+        <p class="text-sm font-semibold text-zinc-600">Biblioteca</p>
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700"><i class="ph ph-books text-xl"></i></span>
+      </div>
+      <p class="mt-4 text-4xl font-extrabold tracking-tight text-zinc-900">{{ totales.archivos }}</p>
       <p class="mt-1 text-xs text-zinc-500">{{ totales.archivos === 1 ? 'archivo guardado' : 'archivos guardados' }}</p>
     </a>
   </ng-container>

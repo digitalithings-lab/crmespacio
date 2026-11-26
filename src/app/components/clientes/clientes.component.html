@@ -9,17 +9,17 @@
 </div>
 
 <!-- Tabla -->
-<div class="mt-8 overflow-hidden rounded-2xl border border-zinc-200 bg-white">
-  <div class="flex flex-wrap items-center gap-3 border-b border-zinc-200 p-4">
+<div class="mt-6 overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm">
+  <div class="flex flex-wrap items-center gap-3 border-b border-zinc-200/80 bg-zinc-50/50 p-4">
     <div class="relative w-full sm:w-80">
       <i class="ph ph-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
       <input type="search" [(ngModel)]="busqueda" aria-label="Buscar cliente" placeholder="Buscar por nombre, correo o cédula" class="w-full rounded-xl border border-zinc-200 py-2.5 pl-11 pr-4 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
     </div>
-    <select [(ngModel)]="filtroEstado" aria-label="Filtrar por estado" class="rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm text-zinc-600 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
+    <select [(ngModel)]="filtroEstado" aria-label="Filtrar por estado" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm text-zinc-600 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10 sm:w-auto">
       <option value="">Todos los estados</option>
       <option *ngFor="let e of estados" [value]="e.valor">{{ e.etiqueta }} ({{ cuantos(e.valor) }})</option>
     </select>
-    <select [(ngModel)]="filtroTipo" aria-label="Filtrar por tipo" class="rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm text-zinc-600 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10">
+    <select [(ngModel)]="filtroTipo" aria-label="Filtrar por tipo" class="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 text-sm text-zinc-600 focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10 sm:w-auto">
       <option value="">Todos los tipos</option>
       <option *ngFor="let t of tipos" [value]="t.valor">{{ t.etiqueta }}</option>
     </select>
@@ -40,43 +40,12 @@
       </thead>
       <tbody class="divide-y divide-zinc-100">
       <ng-container *ngIf="cargando">
-        <tr class="animate-pulse" aria-hidden="true">
+        <tr *ngFor="let _ of [1,2,3,4,5]" class="animate-pulse" aria-hidden="true">
           <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
           <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
           <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
           <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
           <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
-          <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
-        </tr>
-        <tr class="animate-pulse" aria-hidden="true">
-          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
-          <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
-          <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
-          <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
-          <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
-          <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
-        </tr>
-        <tr class="animate-pulse" aria-hidden="true">
-          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
-          <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
-          <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
-          <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
-          <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
-          <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
-        </tr>
-        <tr class="animate-pulse" aria-hidden="true">
-          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
-          <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
-          <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
-          <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
-          <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
-          <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
-        </tr>
-        <tr class="animate-pulse" aria-hidden="true">
-          <td class="px-6 py-4"><div class="flex items-center gap-3"><div class="h-9 w-9 shrink-0 rounded-full bg-zinc-200"></div><div class="space-y-2"><div class="h-3.5 w-36 rounded bg-zinc-200"></div><div class="h-3 w-44 rounded bg-zinc-100"></div></div></div></td>
-          <td class="hidden px-6 py-4 md:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
-          <td class="hidden px-6 py-4 lg:table-cell"><div class="h-3.5 w-24 rounded bg-zinc-200"></div></td>
-          <td class="hidden px-6 py-4 sm:table-cell"><div class="h-3.5 w-8 rounded bg-zinc-200"></div></td>
           <td class="px-6 py-4"><div class="h-6 w-20 rounded-full bg-zinc-200"></div></td>
           <td class="px-6 py-4"><div class="ml-auto h-8 w-8 rounded-lg bg-zinc-100"></div></td>
         </tr>
@@ -84,7 +53,7 @@
 
       <ng-container *ngIf="!cargando">
         <tr *ngFor="let f of filtrados; let i = index" (click)="ver(f)"
-            class="group animate-fade-in cursor-pointer transition hover:bg-zinc-50"
+            class="group animate-fade-in cursor-pointer transition hover:bg-brand-50/40"
             [style.animation-delay.ms]="(i < 8 ? i : 8) * 35">
           <td class="px-6 py-4">
             <div class="flex items-center gap-3">
@@ -142,7 +111,7 @@
         <div class=""><label for="c-edad" class="mb-2 block text-sm font-semibold">Edad</label><input id="c-edad" name="c-edad" type="number" [(ngModel)]="edad" required placeholder="Edad" class="w-full rounded-xl border border-zinc-300 px-4 py-3 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" /></div>
       <div class="sm:col-span-2">
         <span id="tipo-label" class="mb-2 block text-sm font-semibold">Tipo</span>
-        <div role="radiogroup" aria-labelledby="tipo-label" class="grid grid-cols-3 gap-3">
+        <div role="radiogroup" aria-labelledby="tipo-label" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label class="cursor-pointer"><input type="radio" name="tipo" value="pareja" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-heart text-2xl"></i>Pareja</span></label>
           <label class="cursor-pointer"><input type="radio" name="tipo" value="individual" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-user text-2xl"></i>Individual</span></label>
           <label class="cursor-pointer"><input type="radio" name="tipo" value="niños/adolescentes" [(ngModel)]="tipo" class="peer sr-only" /><span class="flex flex-col items-center gap-1.5 rounded-xl border border-zinc-300 px-3 py-3 text-center text-sm font-semibold text-zinc-600 transition hover:bg-zinc-50 peer-checked:border-brand-600 peer-checked:bg-brand-50 peer-checked:text-brand-700 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-600/20"><i class="ph ph-baby text-2xl"></i>Niños/Adolescentes</span></label>

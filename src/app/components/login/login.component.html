@@ -1,62 +1,61 @@
-<div class="grid min-h-[100dvh] bg-white font-sans text-zinc-800 antialiased lg:grid-cols-2">
+<div class="grid min-h-[100dvh] bg-[#faf8f9] font-sans text-zinc-800 antialiased lg:grid-cols-2">
 
   <!-- Panel de marca -->
-  <section class="relative hidden flex-col justify-between overflow-hidden bg-brand-50 p-12 lg:flex">
-    <div class="absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full bg-brand-100/70"></div>
-    <div class="absolute -bottom-40 -left-24 h-[24rem] w-[24rem] rounded-full bg-brand-200/40"></div>
-    <img src="assets/img/Logo Espacio Vital.png" alt="Logo" class="relative h-12 w-12 object-contain" />
-    <div class="relative max-w-md">
-      <img src="assets/img/Logo Espacio Vital.png" alt="" aria-hidden="true" class="mb-10 h-40 w-auto object-contain" />
-      <h2 class="text-4xl font-extrabold leading-tight tracking-tight text-brand-900">Todo tu trabajo con clientes, en un solo lugar.</h2>
-      <p class="mt-4 max-w-sm text-base leading-relaxed text-zinc-600">Clientes, notas y documentos organizados para que no pierdas el hilo.</p>
+  <section class="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-50 via-[#fdf7f8] to-brand-100/80 p-12 lg:flex">
+    <div class="absolute -right-32 -top-32 h-[28rem] w-[28rem] rounded-full bg-brand-200/40 blur-2xl"></div>
+    <div class="absolute -bottom-40 -left-24 h-[24rem] w-[24rem] rounded-full bg-brand-200/50 blur-2xl"></div>
+    <div class="relative flex items-center gap-3">
+      <img src="assets/img/Logo Espacio Vital.png" alt="Logo Espacio Vital" class="h-11 w-11 object-contain" />
+      <span class="text-base font-extrabold tracking-tight text-brand-900">Espacio Vital</span>
     </div>
-    <p class="relative text-sm text-zinc-500">© 2026</p>
+    <div class="relative max-w-md">
+      <span class="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-white/80 px-3 py-1 text-xs font-semibold text-brand-700 shadow-sm">
+        <i class="ph ph-sparkle text-sm"></i> Plataforma clínica integral
+      </span>
+      <h2 class="mt-5 text-4xl font-extrabold leading-tight tracking-tight text-brand-900">Todo tu trabajo con clientes, en un solo lugar.</h2>
+      <p class="mt-4 max-w-sm text-base leading-relaxed text-zinc-600">Expedientes, agenda, notas clínicas y documentos organizados con claridad y elegancia.</p>
+    </div>
+    <p class="relative text-sm font-medium text-brand-800/60">Espacio Vital · © 2026</p>
   </section>
 
   <!-- Formulario -->
   <section class="flex items-center justify-center px-6 py-12">
-    <form class="w-full max-w-sm" aria-labelledby="login-title">
-      <img src="assets/img/Logo Espacio Vital.png" alt="Logo" class="mb-8 h-14 w-14 object-contain lg:hidden" />
-      <h1 id="login-title" class="text-3xl font-extrabold tracking-tight">Iniciar sesión</h1>
-      <p class="mt-2 text-sm text-zinc-500">Ingresa tus datos para acceder al panel.</p>
+    <form (ngSubmit)="login()" class="w-full max-w-md rounded-3xl border border-zinc-200/80 bg-white p-8 shadow-sm sm:p-10" aria-labelledby="login-title">
+      <div class="mb-6 flex items-center gap-3 lg:hidden">
+        <img src="assets/img/Logo Espacio Vital.png" alt="Logo Espacio Vital" class="h-11 w-11 object-contain" />
+        <span class="text-base font-extrabold text-brand-900">Espacio Vital</span>
+      </div>
+      <h1 id="login-title" class="text-3xl font-extrabold tracking-tight text-zinc-900">Iniciar sesión</h1>
+      <p class="mt-1.5 text-sm text-zinc-500">Ingresa tus datos para acceder a tu consultorio.</p>
 
-      <div class="mt-8 space-y-5">
+      <div class="mt-7 space-y-5">
         <div>
-          <label for="email" class="mb-2 block text-sm font-semibold">Correo electrónico</label>
+          <label for="email" class="mb-1.5 block text-sm font-semibold text-zinc-700">Correo electrónico</label>
           <div class="relative">
             <i class="ph ph-envelope-simple pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
-            <input name="correo" [(ngModel)]="correo" type="email" autocomplete="email" placeholder="tu@correo.com"
-              class="w-full rounded-xl border border-zinc-300 py-3 pl-11 pr-4 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
+            <input id="email" name="correo" [(ngModel)]="correo" type="email" autocomplete="email" placeholder="tu@correo.com"
+              class="w-full rounded-xl border border-zinc-300 bg-zinc-50/50 py-3 pl-11 pr-4 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
           </div>
         </div>
 
         <div>
-          <div class="mb-2 flex items-center justify-between">
-            <label for="pass" class="text-sm font-semibold">Contraseña</label>
-            <a href="#" class="rounded text-sm font-semibold text-brand-700 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">¿La olvidaste?</a>
+          <div class="mb-1.5 flex items-center justify-between">
+            <label for="pass" class="text-sm font-semibold text-zinc-700">Contraseña</label>
           </div>
           <div class="relative">
             <i class="ph ph-lock-simple pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-zinc-400"></i>
-            <input name="password" [(ngModel)]="password" type="password" autocomplete="current-password" placeholder="••••••••"
-              class="w-full rounded-xl border border-zinc-300 py-3 pl-11 pr-11 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
-            <button   aria-label="Mostrar contraseña"
-              class="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
-              <i class="ph ph-eye text-lg"></i>
-            </button>
+            <input id="pass" name="password" [(ngModel)]="password" type="password" autocomplete="current-password" placeholder="••••••••"
+              class="w-full rounded-xl border border-zinc-300 bg-zinc-50/50 py-3 pl-11 pr-4 text-sm placeholder:text-zinc-400 transition focus:border-brand-600 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-600/10" />
           </div>
         </div>
 
-        <label class="flex cursor-pointer items-center gap-2.5 text-sm text-zinc-600">
-        No tienes cuenta? <a class="underline text-blue-500" href="/crearcuenta">Crear cuenta aquí</a>
-        </label>
-
-        <a (click)="login()" [attr.aria-busy]="cargando" [class.pointer-events-none]="cargando" [class.opacity-80]="cargando"
-          class="flex cursor-pointer w-full items-center justify-center gap-2 rounded-xl bg-brand-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-brand-800 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
+        <button type="submit" [disabled]="cargando"
+          class="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-700 to-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-brand-900/15 transition duration-200 hover:from-brand-800 hover:to-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-600/30">
           <ng-container *ngIf="!cargando">Entrar <i class="ph ph-arrow-right text-base"></i></ng-container>
           <ng-container *ngIf="cargando"><i class="ph ph-spinner animate-spin text-lg"></i> Entrando…</ng-container>
-        </a>
+        </button>
       </div>
-      <p class="mt-6 text-center text-sm text-zinc-500">¿No tienes cuenta? <a routerLink="/crearcuenta" class="rounded font-semibold text-brand-700 hover:text-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">Crear cuenta</a></p>
+      <p class="mt-6 text-center text-sm text-zinc-500">¿No tienes cuenta? <a routerLink="/crearcuenta" class="rounded font-semibold text-brand-700 hover:text-brand-800 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">Crear cuenta</a></p>
     </form>
   </section>
 </div>

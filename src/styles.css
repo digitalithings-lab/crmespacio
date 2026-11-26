@@ -2,8 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background-color: #f5dde2;
+    color: #3d0a14;
+  }
+}
+
+/* Scrollbar sutil */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d8 transparent;
+}
+
 /* Entrada suave de cada página al navegar */
-app-dashboard, app-clientes, app-notas, app-biblioteca, app-expediente, app-reuniones {
+app-dashboard, app-clientes, app-notas, app-biblioteca, app-biblioteca-personal, app-expediente, app-reuniones, app-agenda, app-agenda-ajustes, app-formularios, app-chat-ia {
   display: block;
   animation: pagina-in 0.35s ease-out both;
 }
